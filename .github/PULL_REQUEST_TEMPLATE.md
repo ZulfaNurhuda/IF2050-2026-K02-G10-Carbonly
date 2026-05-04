@@ -1,16 +1,6 @@
 ## Deskripsi
 <!-- Jelaskan secara singkat apa yang diubah/ditambahkan di PR ini -->
-
-
-## Jenis Perubahan
-<!-- Centang yang sesuai dengan mengganti [ ] menjadi [x] -->
-- [ ] ✨ `feat` — Fitur baru
-- [ ] 🐛 `fix` — Bug fix
-- [ ] 🧹 `refactor` — Refactor (tidak ada perubahan fungsional)
-- [ ] 📝 `docs` — Dokumentasi
-- [ ] 🎨 `style` — Formatting / UI
-- [ ] 🧪 `test` — Unit testing
-- [ ] ⚙️ `chore` — Build, dependency, konfigurasi
+<!-- GUNAKAN TITLE BERAWALAN TIPE COMMIT, SEPERTI [FEAT], [FIX], [CHORE], [DOCS], dll -->
 
 ## Terkait Issue
 <!-- Tulis nomor issue yang diselesaikan PR ini -->
