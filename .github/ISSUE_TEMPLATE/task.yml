@@ -8,7 +8,7 @@ body:
       value: |
         Isi form ini untuk mendaftarkan task implementasi kamu. Pastikan tidak ada task yang overlap dengan anggota lain!
 
-  - type: input
+  - type: textarea
     id: deskripsi
     attributes:
       label: Deskripsi Task
@@ -30,10 +30,10 @@ body:
       required: true
 
   - type: textarea
-    id: usecase
+    id: module
     attributes:
-      label: Modul / Use Case Terkait
-      description: UC berapa yang di-cover task ini?
+      label: Modul
+      description: Modul apa saja yang di-cover task ini? (Bisa berupa Use Case)
       placeholder: |
         - UC01 - Log Aktivitas
     validations:
