@@ -1,0 +1,58 @@
+name: Task Implementasi
+description: Tracking pembagian tugas implementasi Perangkat Lunak Carbonly.
+title: "[TASK] "
+labels: ["in progress"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Isi form ini untuk mendaftarkan task implementasi kamu. Pastikan tidak ada task yang overlap dengan anggota lain!
+
+  - type: input
+    id: deskripsi
+    attributes:
+      label: Deskripsi Task
+      description: Jelaskan secara singkat task yang akan dikerjakan
+      placeholder: "Contoh: Implementasi form log aktivitas transportasi"
+    validations:
+      required: true
+
+  - type: textarea
+    id: kelas
+    attributes:
+      label: Kelas yang Diimplementasi
+      description: Tuliskan kelas-kelas yang akan dikerjakan beserta layer-nya (Boundary / Controller / Entity)
+      placeholder: |
+        - FormLog (Boundary)
+        - LogAktivitasController (Controller)
+        - LogAktivitas (Entity)
+    validations:
+      required: true
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Modul / Use Case Terkait
+      description: UC berapa yang di-cover task ini?
+      placeholder: |
+        - UC01 - Log Aktivitas
+    validations:
+      required: true
+
+  - type: input
+    id: branch
+    attributes:
+      label: Branch yang Digunakan
+      description: Nama branch untuk task ini
+      placeholder: "feat/nama-fitur"
+    validations:
+      required: true
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline
+      description: Kapan kira-kira task ini harus selesai?
+      placeholder: "Contoh: 10 Mei 2026"
+    validations:
+      required: true

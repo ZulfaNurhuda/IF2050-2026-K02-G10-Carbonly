@@ -1,0 +1,2 @@
+# Dependencies Perangkat Lunak Carbonly
+# Akan diisi sesuai library yang digunakan

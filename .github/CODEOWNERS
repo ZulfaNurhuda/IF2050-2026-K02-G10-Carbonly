@@ -1,0 +1,11 @@
+# CODEOWNERS Perangkat Lunak Carbonly
+# Semua PR harus di-review oleh salah satu maintainer
+
+# Global wajib review maintainer
+* @ZulfaNurhuda @snailsquid
+
+# Source code wajib review maintainer
+/src/ @ZulfaNurhuda @snailsquid
+
+# File ini dilindungi eksplisit dari pengubahan tidak sah
+.github/CODEOWNERS @ZulfaNurhuda
