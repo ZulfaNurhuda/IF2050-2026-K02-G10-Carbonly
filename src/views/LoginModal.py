@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QDialog, QLineEdit as QLineEditBase, QVBoxLayout
+from PyQt6.QtWidgets import QDialog, QLineEdit as QLineEditBase
 from qfluentwidgets import LineEdit, StrongBodyLabel, HyperlinkLabel, MessageBoxBase
 
 
@@ -9,7 +9,9 @@ class LoginModal(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Login")
+        self._is_register_mode = False
         self._setup_ui()
+        self._connect_enter_key()
 
     def _setup_ui(self):
         self.username_label = StrongBodyLabel("Username", self)
@@ -23,16 +25,24 @@ class LoginModal(MessageBoxBase):
         self._password_input.setEchoMode(QLineEditBase.EchoMode.Password)
         self._password_input.setFixedHeight(40)
 
+        self._confirm_label = StrongBodyLabel("Confirm Password", self)
+        self._confirm_label.setVisible(False)
+        self._confirm_input = LineEdit(self)
+        self._confirm_input.setPlaceholderText("Confirm your password")
+        self._confirm_input.setEchoMode(QLineEditBase.EchoMode.Password)
+        self._confirm_input.setFixedHeight(40)
+        self._confirm_input.setVisible(False)
+
         self._error_label = StrongBodyLabel("", self)
         self._error_label.setStyleSheet("color: red;")
         self._error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._error_label.setVisible(False)
 
         self._register_link = HyperlinkLabel("Don't have an account? Register", self)
-        self._register_link.clicked.connect(self._on_register_clicked)
+        self._register_link.clicked.connect(self._toggle_mode)
 
         self.yesButton.setText("Login")
-        self.yesButton.clicked.connect(self._on_login_clicked)
+        self.yesButton.clicked.connect(self._on_submit)
         self.cancelButton.setText("Cancel")
         self.cancelButton.clicked.connect(self.reject)
 
@@ -40,12 +50,42 @@ class LoginModal(MessageBoxBase):
         self.viewLayout.addWidget(self._username_input)
         self.viewLayout.addWidget(self.password_label)
         self.viewLayout.addWidget(self._password_input)
+        self.viewLayout.addWidget(self._confirm_label)
+        self.viewLayout.addWidget(self._confirm_input)
         self.viewLayout.addWidget(self._error_label)
         self.viewLayout.addWidget(self._register_link)
 
         self.widget.setMinimumWidth(360)
 
-    def _on_login_clicked(self):
+    def _connect_enter_key(self):
+        self._username_input.returnPressed.connect(self._on_submit)
+        self._password_input.returnPressed.connect(self._on_submit)
+        self._confirm_input.returnPressed.connect(self._on_submit)
+
+    def _toggle_mode(self):
+        self._is_register_mode = not self._is_register_mode
+        if self._is_register_mode:
+            self.setWindowTitle("Register")
+            self.yesButton.setText("Register")
+            self._register_link.setText("Already have an account? Login")
+            self._confirm_label.setVisible(True)
+            self._confirm_input.setVisible(True)
+            self._error_label.setVisible(False)
+        else:
+            self.setWindowTitle("Login")
+            self.yesButton.setText("Login")
+            self._register_link.setText("Don't have an account? Register")
+            self._confirm_label.setVisible(False)
+            self._confirm_input.setVisible(False)
+            self._error_label.setVisible(False)
+
+    def _on_submit(self):
+        if self._is_register_mode:
+            self._on_register()
+        else:
+            self._on_login()
+
+    def _on_login(self):
         from src.services.auth_service import verify_user
 
         username = self._username_input.text().strip()
@@ -61,12 +101,27 @@ class LoginModal(MessageBoxBase):
         else:
             self._show_error("Invalid username or password")
 
-    def _on_register_clicked(self):
-        from src.views.RegisterModal import RegisterModal
+    def _on_register(self):
+        from src.services.auth_service import register_user
 
-        register_dialog = RegisterModal(self)
-        if register_dialog.exec() == QDialog.DialogCode.Accepted:
+        username = self._username_input.text().strip()
+        password = self._password_input.text()
+        confirm = self._confirm_input.text()
+
+        if not username or not password or not confirm:
+            self._show_error("Please fill in all fields")
+            return
+
+        if password != confirm:
+            self._show_error("Passwords do not match")
+            return
+
+        success, message = register_user(username, password)
+        if success:
             self._show_success("Registration successful! Please login.")
+            self._toggle_mode()
+        else:
+            self._show_error(message)
 
     def _show_error(self, message: str):
         self._error_label.setText(message)
