@@ -1,2 +1,28 @@
-# Dependencies Perangkat Lunak Carbonly
-PyQt-Fluent-Widgets>=1.0.0
+# ===========================
+# Application
+# ===========================
+PyQt6-Fluent-Widgets>=1.11.2
+
+# ===========================
+# Linting & Formatting
+# ===========================
+flake8>=7.3.0
+flake8-bugbear>=24.12.0
+mypy>=1.10.0
+ruff>=0.4.4
+
+# ===========================
+# Security
+# ===========================
+bandit>=1.7.9
+pip-audit>=2.7.3
+
+# ===========================
+# Testing
+# ===========================
+pytest>=8.0.0
+
+# ===========================
+# Pre-commit (Opsional)
+# ===========================
+pre-commit>=3.7.0
