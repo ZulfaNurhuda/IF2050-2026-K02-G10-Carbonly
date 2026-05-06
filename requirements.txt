@@ -1,2 +1,2 @@
 # Dependencies Perangkat Lunak Carbonly
-# Akan diisi sesuai library yang digunakan
+PyQt-Fluent-Widgets>=1.0.0
