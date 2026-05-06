@@ -1,6 +1,7 @@
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QDialog, QLineEdit as QLineEditBase
-from qfluentwidgets import LineEdit, StrongBodyLabel, HyperlinkLabel, MessageBoxBase
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, pyqtSignal, QEvent
+from PyQt6.QtWidgets import QDialog, QLineEdit as QLineEditBase, QPushButton
+from qfluentwidgets import LineEdit, PrimaryPushButton, StrongBodyLabel, HyperlinkLabel, MessageBoxBase, FluentIcon
 
 
 class LoginModal(MessageBoxBase):
@@ -12,6 +13,30 @@ class LoginModal(MessageBoxBase):
         self._is_register_mode = False
         self._setup_ui()
         self._connect_enter_key()
+        self._setup_close_button()
+        self.widget.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if obj == self.widget and event.type() == QEvent.Type.Resize:
+            self._close_btn.move(self.widget.width() - 36, 4)
+        return super().eventFilter(obj, event)
+
+    def _setup_close_button(self):
+        self._close_btn = QPushButton("", self.widget)
+        self._close_btn.setFixedSize(24, 24)
+        self._close_btn.setIcon(FluentIcon.CLOSE.icon())
+        self._close_btn.setIconSize(QtCore.QSize(12, 12))
+        self._close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: rgba(0, 0, 0, 0.1);
+            }
+        """)
+        self._close_btn.clicked.connect(self.reject)
 
     def _setup_ui(self):
         self.username_label = StrongBodyLabel("Username", self)
@@ -41,10 +66,13 @@ class LoginModal(MessageBoxBase):
         self._register_link = HyperlinkLabel("Don't have an account? Register", self)
         self._register_link.clicked.connect(self._toggle_mode)
 
-        self.yesButton.setText("Login")
-        self.yesButton.clicked.connect(self._on_submit)
-        self.cancelButton.setText("Cancel")
-        self.cancelButton.clicked.connect(self.reject)
+        self._submit_button = PrimaryPushButton("Login", self)
+        self._submit_button.setFixedHeight(40)
+        self._submit_button.clicked.connect(self._on_submit)
+
+        self.yesButton.setVisible(False)
+        self.cancelButton.setVisible(False)
+        self.buttonGroup.setFixedHeight(0)
 
         self.viewLayout.addWidget(self.username_label)
         self.viewLayout.addWidget(self._username_input)
@@ -53,6 +81,7 @@ class LoginModal(MessageBoxBase):
         self.viewLayout.addWidget(self._confirm_label)
         self.viewLayout.addWidget(self._confirm_input)
         self.viewLayout.addWidget(self._error_label)
+        self.viewLayout.addWidget(self._submit_button)
         self.viewLayout.addWidget(self._register_link)
 
         self.widget.setMinimumWidth(360)
@@ -66,14 +95,14 @@ class LoginModal(MessageBoxBase):
         self._is_register_mode = not self._is_register_mode
         if self._is_register_mode:
             self.setWindowTitle("Register")
-            self.yesButton.setText("Register")
+            self._submit_button.setText("Register")
             self._register_link.setText("Already have an account? Login")
             self._confirm_label.setVisible(True)
             self._confirm_input.setVisible(True)
             self._error_label.setVisible(False)
         else:
             self.setWindowTitle("Login")
-            self.yesButton.setText("Login")
+            self._submit_button.setText("Login")
             self._register_link.setText("Don't have an account? Register")
             self._confirm_label.setVisible(False)
             self._confirm_input.setVisible(False)
