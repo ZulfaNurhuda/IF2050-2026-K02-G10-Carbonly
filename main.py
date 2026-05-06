@@ -1,10 +1,13 @@
 import sys
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QDialog, QGraphicsOpacityEffect, QWidget
 from qfluentwidgets import FluentIcon, MSFluentWindow
 
+from src.models.User import User
 from src.pages.example import ExamplePage
+from src.views.LoginModal import LoginModal
 
 
 class MainWindow(MSFluentWindow):
@@ -22,7 +25,28 @@ class MainWindow(MSFluentWindow):
 
 
 if __name__ == "__main__":
+    User.create_table()
+    User.seed_demo_user()
+
     app = QApplication(sys.argv)
     w = MainWindow()
     w.show()
+
+    overlay = QWidget(w)
+    overlay.setGeometry(0, 0, w.width(), w.height())
+    overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.4);")
+    overlay.show()
+
+    login_modal = LoginModal(w)
+
+    def on_login_finished():
+        overlay.close()
+        overlay.deleteLater()
+
+    login_modal.accepted.connect(on_login_finished)
+    login_modal.rejected.connect(sys.exit)
+
+    if login_modal.exec() != QDialog.DialogCode.Accepted:
+        sys.exit(0)
+
     app.exec()
