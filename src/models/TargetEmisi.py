@@ -2,13 +2,12 @@ from typing import Optional
 
 
 class TargetEmisi:
-
     def __init__(
         self,
         id: Optional[int] = None,
         nilaiTarget: Optional[float] = None,
         satuan: Optional[str] = None,
-        tahun: Optional[int] = None
+        tahun: Optional[int] = None,
     ):
         self._id = id
         self._nilaiTarget = nilaiTarget
@@ -47,7 +46,7 @@ class TargetEmisi:
     def tahun(self, value: int):
         self._tahun = value
 
-    def ubah(self, data: 'TargetEmisi') -> None:
+    def ubah(self, data: "TargetEmisi") -> None:
         pass
 
     def validasiInput(self) -> bool:

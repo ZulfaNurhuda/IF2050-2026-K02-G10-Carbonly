@@ -2,12 +2,11 @@ from typing import List, Optional
 
 
 class DaftarLogAktivitasView:
-
     def __init__(
         self,
-        controller: Optional['LogAktivitasController'] = None,
-        logTerpilih: Optional['LogAktivitas'] = None,
-        daftarLog: Optional[List['LogAktivitas']] = None
+        controller: Optional["LogAktivitasController"] = None,
+        logTerpilih: Optional["LogAktivitas"] = None,
+        daftarLog: Optional[List["LogAktivitas"]] = None,
     ):
         self._controller = controller
         self._logTerpilih = logTerpilih
@@ -40,7 +39,7 @@ class DaftarLogAktivitasView:
     def tampilkan(self) -> None:
         pass
 
-    def pilihLog(self, log: 'LogAktivitas') -> None:
+    def pilihLog(self, log: "LogAktivitas") -> None:
         pass
 
     def hapusLog(self) -> None:
@@ -55,7 +54,7 @@ class DaftarLogAktivitasView:
     def tutupKonfirmasi(self) -> None:
         pass
 
-    def tunjukkanDaftarLog(self, daftarLog: List['LogAktivitas']) -> None:
+    def tunjukkanDaftarLog(self, daftarLog: List["LogAktivitas"]) -> None:
         pass
 
     def tunjukkanKosong(self) -> None:

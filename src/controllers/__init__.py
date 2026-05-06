@@ -1,5 +1,5 @@
 from .LogAktivitasController import LogAktivitasController
-from .TargetEmisiController import TargetEmisiController
 from .RekapitulasiController import RekapitulasiController
+from .TargetEmisiController import TargetEmisiController
 
-__all__ = ['LogAktivitasController', 'TargetEmisiController', 'RekapitulasiController']
+__all__ = ["LogAktivitasController", "TargetEmisiController", "RekapitulasiController"]

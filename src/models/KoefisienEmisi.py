@@ -2,13 +2,12 @@ from typing import Optional
 
 
 class KoefisienEmisi:
-
     def __init__(
         self,
         id: Optional[int] = None,
         kategori: Optional[str] = None,
         nilaiKoefisien: Optional[float] = None,
-        satuan: Optional[str] = None
+        satuan: Optional[str] = None,
     ):
         self._id = id
         self._kategori = kategori
@@ -48,5 +47,5 @@ class KoefisienEmisi:
         self._satuan = value
 
     @staticmethod
-    def dapatkanBerdasarkanKategori(kategori: str) -> 'KoefisienEmisi':
+    def dapatkanBerdasarkanKategori(kategori: str) -> "KoefisienEmisi":
         pass

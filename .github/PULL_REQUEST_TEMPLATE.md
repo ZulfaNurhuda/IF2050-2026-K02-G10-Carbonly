@@ -9,12 +9,12 @@ Closes #
 
 ## Kelas yang Diimplementasi / Diubah
 <!-- Tuliskan kelas-kelas yang kamu implementasikan atau ubah di PR ini -->
-- 
+-
 
 ## Perubahan yang Dilakukan
 <!-- Bullet point singkat apa saja yang berubah -->
-- 
-- 
+-
+-
 
 ## Screenshot Hasil
 <!-- Lampirkan screenshot tampilan aplikasi untuk setiap modul yang dikerjakan -->

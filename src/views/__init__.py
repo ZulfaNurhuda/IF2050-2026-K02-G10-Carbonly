@@ -1,6 +1,11 @@
-from .FormLogAktivitasView import FormLogAktivitasView
 from .DaftarLogAktivitasView import DaftarLogAktivitasView
-from .RekapitulasiView import RekapitulasiView
+from .FormLogAktivitasView import FormLogAktivitasView
 from .FormTargetView import FormTargetView
+from .RekapitulasiView import RekapitulasiView
 
-__all__ = ['FormLogAktivitasView', 'DaftarLogAktivitasView', 'RekapitulasiView', 'FormTargetView']
+__all__ = [
+    "FormLogAktivitasView",
+    "DaftarLogAktivitasView",
+    "RekapitulasiView",
+    "FormTargetView",
+]

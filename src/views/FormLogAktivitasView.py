@@ -2,15 +2,14 @@ from typing import Optional
 
 
 class FormLogAktivitasView:
-
     def __init__(
         self,
-        controller: Optional['LogAktivitasController'] = None,
-        logTerpilih: Optional['LogAktivitas'] = None,
+        controller: Optional["LogAktivitasController"] = None,
+        logTerpilih: Optional["LogAktivitas"] = None,
         inputKategori: Optional[str] = None,
-        inputTanggal: Optional['datetime'] = None,
+        inputTanggal: Optional["datetime"] = None,
         inputBesaran: Optional[float] = None,
-        inputSatuan: Optional[str] = None
+        inputSatuan: Optional[str] = None,
     ):
         self._controller = controller
         self._logTerpilih = logTerpilih
@@ -70,7 +69,7 @@ class FormLogAktivitasView:
     def tampilkan(self) -> None:
         pass
 
-    def fillForm(self, targetData: 'TargetEmisi') -> None:
+    def fillForm(self, targetData: "TargetEmisi") -> None:
         pass
 
     def simpanForm(self) -> None:

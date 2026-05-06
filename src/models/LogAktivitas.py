@@ -3,7 +3,6 @@ from typing import Optional
 
 
 class LogAktivitas:
-
     def __init__(
         self,
         id: Optional[int] = None,
@@ -11,7 +10,7 @@ class LogAktivitas:
         kategori: Optional[str] = None,
         nilaiAktivitas: Optional[float] = None,
         satuanAktivitas: Optional[str] = None,
-        totalEmisi: Optional[float] = None
+        totalEmisi: Optional[float] = None,
     ):
         self._id = id
         self._tanggal = tanggal
@@ -68,11 +67,11 @@ class LogAktivitas:
     def totalEmisi(self, value: float):
         self._totalEmisi = value
 
-    def ubah(self, data: 'LogAktivitas') -> None:
+    def ubah(self, data: "LogAktivitas") -> None:
         pass
 
     def validasiInput(self) -> bool:
         pass
 
-    def hitungEmisi(self, koefisien: 'KoefisienEmisi') -> None:
+    def hitungEmisi(self, koefisien: "KoefisienEmisi") -> None:
         pass

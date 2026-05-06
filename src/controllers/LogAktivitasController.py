@@ -1,9 +1,8 @@
-from typing import List, Optional
 from datetime import datetime
+from typing import List
 
 
 class LogAktivitasController:
-
     def __init__(self):
         self._logAktivitas = None
 
@@ -15,20 +14,22 @@ class LogAktivitasController:
     def logAktivitas(self, value):
         self._logAktivitas = value
 
-    def dapatkanDaftarLog(self) -> List['LogAktivitas']:
+    def dapatkanDaftarLog(self) -> List["LogAktivitas"]:
         pass
 
-    def tambahLog(self, data: 'LogAktivitas') -> None:
+    def tambahLog(self, data: "LogAktivitas") -> None:
         pass
 
-    def ubahLog(self, data: 'LogAktivitas') -> None:
+    def ubahLog(self, data: "LogAktivitas") -> None:
         pass
 
-    def simpanLog(self, data: 'LogAktivitas') -> None:
+    def simpanLog(self, data: "LogAktivitas") -> None:
         pass
 
     def hapusLog(self, id: int) -> None:
         pass
 
-    def dapatkanLogRentang(self, tanggalMulai: datetime, tanggalAkhir: datetime) -> List['LogAktivitas']:
+    def dapatkanLogRentang(
+        self, tanggalMulai: datetime, tanggalAkhir: datetime
+    ) -> List["LogAktivitas"]:
         pass

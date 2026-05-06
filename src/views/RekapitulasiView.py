@@ -1,14 +1,13 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 
 class RekapitulasiView:
-
     def __init__(
         self,
-        controller: Optional['RekapitulasiController'] = None,
+        controller: Optional["RekapitulasiController"] = None,
         tanggalMulai: Optional[datetime] = None,
-        tanggalAkhir: Optional[datetime] = None
+        tanggalAkhir: Optional[datetime] = None,
     ):
         self._controller = controller
         self._tanggalMulai = tanggalMulai

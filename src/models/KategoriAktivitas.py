@@ -2,12 +2,7 @@ from typing import Optional
 
 
 class KategoriAktivitas:
-
-    def __init__(
-        self,
-        nama: Optional[str] = None,
-        deskripsi: Optional[str] = None
-    ):
+    def __init__(self, nama: Optional[str] = None, deskripsi: Optional[str] = None):
         self._nama = nama
         self._deskripsi = deskripsi
 

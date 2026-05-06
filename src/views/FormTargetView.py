@@ -2,13 +2,12 @@ from typing import Optional
 
 
 class FormTargetView:
-
     def __init__(
         self,
-        controller: Optional['TargetEmisiController'] = None,
+        controller: Optional["TargetEmisiController"] = None,
         inputNilaiTarget: Optional[float] = None,
         inputSatuan: Optional[str] = None,
-        inputTahun: Optional[int] = None
+        inputTahun: Optional[int] = None,
     ):
         self._controller = controller
         self._inputNilaiTarget = inputNilaiTarget
@@ -50,7 +49,7 @@ class FormTargetView:
     def tampilkan(self) -> None:
         pass
 
-    def fillForm(self, targetData: 'TargetEmisi') -> None:
+    def fillForm(self, targetData: "TargetEmisi") -> None:
         pass
 
     def simpanForm(self) -> None:

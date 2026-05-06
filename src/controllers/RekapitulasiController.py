@@ -1,9 +1,8 @@
-from typing import List, Optional
 from datetime import datetime
+from typing import List
 
 
 class RekapitulasiController:
-
     def __init__(self):
         self._logAktivitasController = None
         self._targetEmisiController = None
@@ -24,8 +23,10 @@ class RekapitulasiController:
     def targetEmisiController(self, value):
         self._targetEmisiController = value
 
-    def dapatkanRekapitulasi(self, tanggalMulai: datetime, tanggalAkhir: datetime) -> object:
+    def dapatkanRekapitulasi(
+        self, tanggalMulai: datetime, tanggalAkhir: datetime
+    ) -> object:
         pass
 
-    def hitungTotalEmisi(self, daftarLog: List['LogAktivitas']) -> float:
+    def hitungTotalEmisi(self, daftarLog: List["LogAktivitas"]) -> float:
         pass
