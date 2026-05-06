@@ -1,8 +1,8 @@
+import os
 import sys
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QDialog, QGraphicsOpacityEffect, QWidget
+from PyQt6.QtWidgets import QApplication, QDialog, QWidget
 from qfluentwidgets import FluentIcon, MSFluentWindow
 
 from src.models.User import User
@@ -26,7 +26,8 @@ class MainWindow(MSFluentWindow):
 
 if __name__ == "__main__":
     User.create_table()
-    User.seed_demo_user()
+    if os.environ.get("CARBONLY_DEBUG") == "1":
+        User.seed_demo_user()
 
     app = QApplication(sys.argv)
     w = MainWindow()
