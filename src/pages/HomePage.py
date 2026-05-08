@@ -8,6 +8,7 @@ from qfluentwidgets import (
     SubtitleLabel,
     TitleLabel,
     TransparentPushButton,
+    setFont,
 )
 
 from src.services.AuthService import AuthService
@@ -27,7 +28,7 @@ class _AppHeader(CardWidget):
         # SPEC FIX: wireframe labels this "Ini Branding/Logo Carbonly" — using text
         # placeholder until a logo asset is provided
         branding = StrongBodyLabel("Carbonly", self)
-        branding.setStyleSheet("font-size: 16px;")
+        setFont(branding, 16)
 
         user = AuthService.get_current_user()
         username = (user.username or "") if user else ""
