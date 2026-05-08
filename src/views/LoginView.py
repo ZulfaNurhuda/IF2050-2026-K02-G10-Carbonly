@@ -1,11 +1,6 @@
-from typing import cast
-
-from PyQt6 import QtCore
-from PyQt6.QtCore import QEvent, QObject, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, Qt
 from PyQt6.QtWidgets import QLineEdit as QLineEditBase
-from PyQt6.QtWidgets import QPushButton
 from qfluentwidgets import (
-    FluentIcon,
     HyperlinkLabel,
     LineEdit,
     MessageBoxBase,
@@ -13,43 +8,16 @@ from qfluentwidgets import (
     StrongBodyLabel,
 )
 
-from src.services.AuthService import AuthService
+from src.controllers.AuthController import AuthController
 
 
-class LoginModal(MessageBoxBase):
-    login_succeeded = pyqtSignal()
-
+class LoginView(MessageBoxBase):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Login")
         self._is_register_mode: bool = False
         self._setup_ui()
         self._connect_enter_key()
-        self._setup_close_button()
-        self.widget.installEventFilter(self)
-
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802
-        if obj == self.widget and event.type() == QEvent.Type.Resize:
-            self._close_btn.move(self.widget.width() - 36, 4)
-        return cast(bool, super().eventFilter(obj, event))
-
-    def _setup_close_button(self) -> None:
-        self._close_btn = QPushButton("", self.widget)
-        self._close_btn.setFixedSize(24, 24)
-        self._close_btn.setIcon(FluentIcon.CLOSE.icon())
-        self._close_btn.setIconSize(QtCore.QSize(12, 12))
-        self._close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: rgba(0, 0, 0, 0.1);
-            }
-        """)
-        self._close_btn.clicked.connect(self.reject)
-        self._close_btn.move(self.widget.width() - 36, 4)
 
     def _setup_ui(self) -> None:
         self.username_label = StrongBodyLabel("Username", self)
@@ -128,37 +96,21 @@ class LoginModal(MessageBoxBase):
             self._on_login()
 
     def _on_login(self) -> None:
-        username: str = self._username_input.text().strip()
-        password: str = self._password_input.text()
-
-        if not username or not password:
-            self._show_error("Please enter username and password")
-            return
-
-        if AuthService.verify_user(username, password):
-            self.login_succeeded.emit()
+        username = self._username_input.text().strip()
+        password = self._password_input.text()
+        success, message = AuthController.login(username, password)
+        if success:
             self.accept()
         else:
-            self._show_error("Invalid username or password")
+            self._show_error(message)
 
     def _on_register(self) -> None:
-        username: str = self._username_input.text().strip()
-        password: str = self._password_input.text()
-        confirm: str = self._confirm_input.text()
-
-        if not username or not password or not confirm:
-            self._show_error("Please fill in all fields")
-            return
-
-        if password != confirm:
-            self._show_error("Passwords do not match")
-            return
-
-        success: bool
-        message: str
-        success, message = AuthService.register_user(username, password)
+        username = self._username_input.text().strip()
+        password = self._password_input.text()
+        confirm = self._confirm_input.text()
+        success, message = AuthController.register(username, password, confirm)
         if success:
-            self._show_success("Registration successful! Please login.")
+            self._show_success(message)
             self._toggle_mode()
         else:
             self._show_error(message)

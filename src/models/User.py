@@ -57,14 +57,16 @@ class User:
 
     @staticmethod
     def seed_demo_user() -> None:
+        demo_username: str = "CarbonlyAdmin"
+        demo_password: str = "123456"
         with DBContext.connect() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
+            cursor.execute("SELECT id FROM users WHERE username = ?", (demo_username,))
             if cursor.fetchone() is None:
-                password_hash = _ph.hash("123456")
+                password_hash = _ph.hash(demo_password)
                 cursor.execute(
                     "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                    ("admin", password_hash),
+                    (demo_username, password_hash),
                 )
 
     @staticmethod

@@ -1,8 +1,6 @@
-from typing import cast
-
 from PyQt6 import QtCore
-from PyQt6.QtCore import QEvent, QObject, Qt
-from PyQt6.QtWidgets import QFrame, QPushButton
+from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLineEdit as QLineEditBase
 from qfluentwidgets import (
     FluentIcon,
@@ -13,24 +11,18 @@ from qfluentwidgets import (
     SubtitleLabel,
 )
 
-from src.services.AuthService import AuthService
+from src.controllers.AuthController import AuthController
 
 
-class ProfileModal(MessageBoxBase):
+class ProfileView(MessageBoxBase):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Profile")
         self._setup_close_button()
         self._setup_ui()
-        self.widget.installEventFilter(self)
-
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802
-        if obj == self.widget and event.type() == QEvent.Type.Resize:
-            self._close_btn.move(self.widget.width() - 36, 4)
-        return cast(bool, super().eventFilter(obj, event))
 
     def _setup_close_button(self) -> None:
-        self._close_btn = QPushButton("", self.widget)
+        self._close_btn = QPushButton(self.widget)
         self._close_btn.setFixedSize(24, 24)
         self._close_btn.setIcon(FluentIcon.CLOSE.icon())
         self._close_btn.setIconSize(QtCore.QSize(12, 12))
@@ -45,11 +37,16 @@ class ProfileModal(MessageBoxBase):
             }
         """)
         self._close_btn.clicked.connect(self.reject)
-        self._close_btn.move(self.widget.width() - 36, 4)
+
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(0)
+        row.addStretch(1)
+        row.addWidget(self._close_btn)
+        self.viewLayout.insertLayout(0, row)
 
     def _setup_ui(self) -> None:
-        user = AuthService.get_current_user()
-        current_username = user.username or "" if user else ""
+        current_username = AuthController.get_current_username()
 
         self.viewLayout.addWidget(SubtitleLabel("Ganti Username", self))
 
@@ -119,10 +116,7 @@ class ProfileModal(MessageBoxBase):
 
     def _on_update_username(self) -> None:
         new_username = self._username_input.text().strip()
-        if not new_username:
-            self._set_msg(self._username_msg, "Username tidak boleh kosong", error=True)
-            return
-        success, message = AuthService.update_username(new_username)
+        success, message = AuthController.update_username(new_username)
         if success:
             self._username_input.clear()
             self._username_input.setPlaceholderText(
@@ -136,18 +130,7 @@ class ProfileModal(MessageBoxBase):
         current = self._cur_pass_input.text()
         new_pass = self._new_pass_input.text()
         confirm = self._confirm_pass_input.text()
-
-        if not current or not new_pass or not confirm:
-            self._set_msg(
-                self._password_msg, "Semua field harus diisi", error=True
-            )
-            return
-        if new_pass != confirm:
-            self._set_msg(
-                self._password_msg, "Password baru tidak cocok", error=True
-            )
-            return
-        success, message = AuthService.update_password(current, new_pass)
+        success, message = AuthController.update_password(current, new_pass, confirm)
         if success:
             self._cur_pass_input.clear()
             self._new_pass_input.clear()
