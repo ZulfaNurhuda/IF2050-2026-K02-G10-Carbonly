@@ -45,7 +45,6 @@ if __name__ == "__main__":
         overlay.deleteLater()
 
     login_modal.accepted.connect(on_login_finished)
-    login_modal.rejected.connect(sys.exit)
 
     if login_modal.exec() != QDialog.DialogCode.Accepted:
         sys.exit(0)

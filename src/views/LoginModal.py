@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, pyqtSignal, QEvent
-from PyQt6.QtWidgets import QDialog, QLineEdit as QLineEditBase, QPushButton
+from PyQt6.QtWidgets import QLineEdit as QLineEditBase, QPushButton
 from qfluentwidgets import LineEdit, PrimaryPushButton, StrongBodyLabel, HyperlinkLabel, MessageBoxBase, FluentIcon
 
 
@@ -37,6 +37,7 @@ class LoginModal(MessageBoxBase):
             }
         """)
         self._close_btn.clicked.connect(self.reject)
+        self._close_btn.move(self.widget.width() - 36, 4)
 
     def _setup_ui(self):
         self.username_label = StrongBodyLabel("Username", self)
@@ -153,9 +154,11 @@ class LoginModal(MessageBoxBase):
             self._show_error(message)
 
     def _show_error(self, message: str):
+        self._error_label.setStyleSheet("color: red;")
         self._error_label.setText(message)
         self._error_label.setVisible(True)
 
     def _show_success(self, message: str):
-        self._error_label.setText(f"<span style='color: green;'>{message}</span>")
+        self._error_label.setStyleSheet("color: green;")
+        self._error_label.setText(message)
         self._error_label.setVisible(True)

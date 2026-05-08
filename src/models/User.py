@@ -1,10 +1,11 @@
-import sqlite3
 import hashlib
+import sqlite3
+from pathlib import Path
 from typing import Optional
 
 
 class User:
-    _DB_PATH = "carbonly.db"
+    _DB_PATH = str(Path(__file__).resolve().parent.parent.parent / "carbonly.db")
 
     def __init__(
         self,
@@ -17,27 +18,27 @@ class User:
         self._password_hash = password_hash
 
     @property
-    def id(self) -> int:
+    def id(self) -> Optional[int]:
         return self._id
 
     @id.setter
-    def id(self, value: int):
+    def id(self, value: Optional[int]):
         self._id = value
 
     @property
-    def username(self) -> str:
+    def username(self) -> Optional[str]:
         return self._username
 
     @username.setter
-    def username(self, value: str):
+    def username(self, value: Optional[str]):
         self._username = value
 
     @property
-    def password_hash(self) -> str:
+    def password_hash(self) -> Optional[str]:
         return self._password_hash
 
     @password_hash.setter
-    def password_hash(self, value: str):
+    def password_hash(self, value: Optional[str]):
         self._password_hash = value
 
     @staticmethod
@@ -76,7 +77,10 @@ class User:
     def find_by_username(username: str) -> Optional["User"]:
         conn = User._get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, username, password_hash FROM users WHERE username = ?", (username,))
+        cursor.execute(
+            "SELECT id, username, password_hash FROM users WHERE username = ?",
+            (username,),
+        )
         row = cursor.fetchone()
         conn.close()
         if row:
@@ -100,6 +104,6 @@ class User:
             conn.commit()
             conn.close()
             return True
-        except Exception:
+        except sqlite3.IntegrityError:
             conn.close()
             return False
