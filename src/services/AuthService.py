@@ -1,12 +1,28 @@
+import base64
 import hashlib
-import hmac
 import json
 from pathlib import Path
 from typing import Optional
 
+from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 from src.models.User import User
 
-_SESSION_SIGN_KEY = b"c4rb0nly-d3skt0p-2026"
+_APP_IDENTITY = b"c4rb0nly-d3skt0p-2026"
+_KDF_SALT = b"c4rb0nly-kdf-s4lt-v1"
+
+
+def _get_fernet() -> Fernet:
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=_KDF_SALT,
+        iterations=100_000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(_APP_IDENTITY))
+    return Fernet(key)
 
 
 class AuthService:
@@ -14,12 +30,6 @@ class AuthService:
     _SESSION_PATH: Path = (
         Path(__file__).resolve().parent.parent.parent / ".carbonly_session"
     )
-
-    @staticmethod
-    def _sign(user_id: int) -> str:
-        return hmac.digest(
-            _SESSION_SIGN_KEY, str(user_id).encode(), hashlib.sha256
-        ).hex()
 
     @staticmethod
     def verify_user(username: str, password: str) -> bool:
@@ -41,26 +51,23 @@ class AuthService:
         user = AuthService._current_user
         if user is None or user.id is None:
             return
-        payload = {"user_id": user.id, "sig": AuthService._sign(user.id)}
-        AuthService._SESSION_PATH.write_text(json.dumps(payload))
+        payload = json.dumps({"user_id": user.id}).encode()
+        AuthService._SESSION_PATH.write_bytes(_get_fernet().encrypt(payload))
 
     @staticmethod
     def load_session() -> bool:
         if not AuthService._SESSION_PATH.exists():
             return False
         try:
-            data = json.loads(AuthService._SESSION_PATH.read_text())
-            user_id = int(data["user_id"])
-            if not hmac.compare_digest(str(data["sig"]), AuthService._sign(user_id)):
-                AuthService._SESSION_PATH.unlink(missing_ok=True)
-                return False
-            user = User.find_by_id(user_id)
+            encrypted = AuthService._SESSION_PATH.read_bytes()
+            payload = json.loads(_get_fernet().decrypt(encrypted))
+            user = User.find_by_id(int(payload["user_id"]))
             if user is None:
                 AuthService._SESSION_PATH.unlink(missing_ok=True)
                 return False
             AuthService._current_user = user
             return True
-        except Exception:
+        except (InvalidToken, Exception):
             AuthService._SESSION_PATH.unlink(missing_ok=True)
             return False
 
