@@ -7,7 +7,7 @@ from qfluentwidgets import (
     StrongBodyLabel,
     SubtitleLabel,
     TitleLabel,
-    ToolButton,
+    TransparentPushButton,
 )
 
 from src.services.AuthService import AuthService
@@ -29,13 +29,17 @@ class _AppHeader(CardWidget):
         branding = StrongBodyLabel("Carbonly", self)
         branding.setStyleSheet("font-size: 16px;")
 
-        self._profile_btn = ToolButton(FluentIcon.PEOPLE, self)
-        self._profile_btn.setFixedSize(36, 36)
+        user = AuthService.get_current_user()
+        username = (user.username or "") if user else ""
+        self._profile_btn = TransparentPushButton(FluentIcon.PEOPLE, username, self)
         self._profile_btn.clicked.connect(self.profile_clicked)
 
         layout.addWidget(branding)
         layout.addStretch(1)
         layout.addWidget(self._profile_btn)
+
+    def set_username(self, username: str) -> None:
+        self._profile_btn.setText(username)
 
 
 class _StatCard(CardWidget):
@@ -65,13 +69,16 @@ class HomePage(QWidget):
         super().__init__(parent)
         self.setObjectName("home-page")
         self._welcome_label: TitleLabel | None = None
+        self._header: _AppHeader | None = None
         self._setup_ui()
 
     def refresh(self) -> None:
+        user = AuthService.get_current_user()
+        username = (user.username or "Pengguna") if user else "Pengguna"
         if self._welcome_label is not None:
-            user = AuthService.get_current_user()
-            username = user.username if user else "Pengguna"
             self._welcome_label.setText(f"Selamat datang, {username}!")
+        if self._header is not None:
+            self._header.set_username(username)
 
     def _setup_ui(self) -> None:
         user = AuthService.get_current_user()
@@ -82,9 +89,9 @@ class HomePage(QWidget):
         outer.setSpacing(16)
 
         # ─── In-app header (fixed, non-scrolling) ───
-        header = _AppHeader(self)
-        header.profile_clicked.connect(self.profile_requested)
-        outer.addWidget(header)
+        self._header = _AppHeader(self)
+        self._header.profile_clicked.connect(self.profile_requested)
+        outer.addWidget(self._header)
 
         # ─── Scrollable content area ───
         scroll = QScrollArea(self)
