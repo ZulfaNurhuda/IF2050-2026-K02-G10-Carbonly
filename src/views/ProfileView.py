@@ -139,9 +139,7 @@ class ProfileView(MessageBoxBase):
         else:
             self._set_msg(self._password_msg, message, error=True)
 
-    def _set_msg(
-        self, label: StrongBodyLabel, message: str, *, error: bool
-    ) -> None:
+    def _set_msg(self, label: StrongBodyLabel, message: str, *, error: bool) -> None:
         label.setStyleSheet(f"color: {'red' if error else 'green'};")
         label.setText(message)
         label.setVisible(True)

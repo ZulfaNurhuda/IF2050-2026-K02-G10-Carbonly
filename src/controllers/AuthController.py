@@ -70,9 +70,7 @@ class AuthController:
         return True, "Username berhasil diperbarui"
 
     @staticmethod
-    def update_password(
-        current: str, new_pass: str, confirm: str
-    ) -> tuple[bool, str]:
+    def update_password(current: str, new_pass: str, confirm: str) -> tuple[bool, str]:
         if not current or not new_pass or not confirm:
             return False, "Semua field harus diisi"
         if new_pass != confirm:
