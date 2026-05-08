@@ -6,6 +6,7 @@ def verify_user(username: str, password: str) -> bool:
     if user is None:
         return False
     import hashlib
+
     password_hash = hashlib.sha256(password.encode()).hexdigest()
     return user.password_hash == password_hash
 

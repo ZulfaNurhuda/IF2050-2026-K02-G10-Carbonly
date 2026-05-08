@@ -1,7 +1,15 @@
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, pyqtSignal, QEvent
-from PyQt6.QtWidgets import QLineEdit as QLineEditBase, QPushButton
-from qfluentwidgets import LineEdit, PrimaryPushButton, StrongBodyLabel, HyperlinkLabel, MessageBoxBase, FluentIcon
+from PyQt6.QtCore import QEvent, Qt, pyqtSignal
+from PyQt6.QtWidgets import QLineEdit as QLineEditBase
+from PyQt6.QtWidgets import QPushButton
+from qfluentwidgets import (
+    FluentIcon,
+    HyperlinkLabel,
+    LineEdit,
+    MessageBoxBase,
+    PrimaryPushButton,
+    StrongBodyLabel,
+)
 
 
 class LoginModal(MessageBoxBase):
@@ -16,7 +24,7 @@ class LoginModal(MessageBoxBase):
         self._setup_close_button()
         self.widget.installEventFilter(self)
 
-    def eventFilter(self, obj, event):
+    def eventFilter(self, obj, event):  # noqa: N802
         if obj == self.widget and event.type() == QEvent.Type.Resize:
             self._close_btn.move(self.widget.width() - 36, 4)
         return super().eventFilter(obj, event)
