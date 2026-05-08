@@ -1,4 +1,5 @@
-from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtCore import QObject, Qt, QTimer
+from PyQt6.QtGui import QShowEvent
 from PyQt6.QtWidgets import QLineEdit as QLineEditBase
 from qfluentwidgets import (
     HyperlinkLabel,
@@ -18,6 +19,16 @@ class LoginView(MessageBoxBase):
         self._is_register_mode: bool = False
         self._setup_ui()
         self._connect_enter_key()
+
+    def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
+        super().showEvent(event)
+
+        if self.parent():
+            QTimer.singleShot(0, self._adjust_geometry)
+
+    def _adjust_geometry(self) -> None:
+        if self.parent() and hasattr(self.parent(), "width"):
+            self.setGeometry(0, 0, self.parent().width(), self.parent().height())
 
     def _setup_ui(self) -> None:
         self.username_label = StrongBodyLabel("Username", self)

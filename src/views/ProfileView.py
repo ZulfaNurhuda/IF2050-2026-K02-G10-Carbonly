@@ -1,5 +1,6 @@
 from PyQt6 import QtCore
-from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtCore import QObject, Qt, QTimer
+from PyQt6.QtGui import QShowEvent
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QPushButton
 from PyQt6.QtWidgets import QLineEdit as QLineEditBase
 from qfluentwidgets import (
@@ -20,6 +21,15 @@ class ProfileView(MessageBoxBase):
         self.setWindowTitle("Profile")
         self._setup_close_button()
         self._setup_ui()
+
+    def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
+        super().showEvent(event)
+        if self.parent():
+            QTimer.singleShot(0, self._adjust_geometry)
+
+    def _adjust_geometry(self) -> None:
+        if self.parent() and hasattr(self.parent(), "width"):
+            self.setGeometry(0, 0, self.parent().width(), self.parent().height())
 
     def _setup_close_button(self) -> None:
         self._close_btn = QPushButton(self.widget)

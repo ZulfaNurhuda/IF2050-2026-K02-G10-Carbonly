@@ -21,6 +21,9 @@ if __name__ == "__main__":
     w = MainWindow()
     w.showMaximized()
 
+    # Pastikan window sudah ter-layout dengan benar sebelum menampilkan dialog
+    QApplication.processEvents()
+
     if AuthController.initialize():
         w.home_interface.refresh()
     else:

@@ -49,7 +49,9 @@ class HomePage(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setStyleSheet("background: transparent;")
-        scroll.viewport().setAutoFillBackground(False)
+        viewport = scroll.viewport()
+        if viewport:
+            viewport.setAutoFillBackground(False)
 
         content = QWidget()
         content.setAutoFillBackground(False)

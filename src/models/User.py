@@ -57,8 +57,8 @@ class User:
 
     @staticmethod
     def seed_demo_user() -> None:
-        demo_username: str = "CarbonlyAdmin"
-        demo_password: str = "123456"
+        demo_username = "CarbonlyAdmin"
+        demo_password = "123456"
         with DBContext.connect() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM users WHERE username = ?", (demo_username,))
