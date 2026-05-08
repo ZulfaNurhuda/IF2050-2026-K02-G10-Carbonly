@@ -1,16 +1,30 @@
 import hashlib
+from typing import Optional
 
 from src.models.User import User
 
 
 class AuthService:
+    _current_user: Optional[User] = None
+
     @staticmethod
     def verify_user(username: str, password: str) -> bool:
         user = User.find_by_username(username)
         if user is None:
             return False
         password_hash = hashlib.sha256(password.encode()).hexdigest()
-        return user.password_hash == password_hash
+        if user.password_hash == password_hash:
+            AuthService._current_user = user
+            return True
+        return False
+
+    @staticmethod
+    def get_current_user() -> Optional[User]:
+        return AuthService._current_user
+
+    @staticmethod
+    def logout() -> None:
+        AuthService._current_user = None
 
     @staticmethod
     def get_user(username: str) -> User | None:
@@ -28,3 +42,33 @@ class AuthService:
         if not success:
             return False, "Username already exists"
         return True, "User registered successfully"
+
+    @staticmethod
+    def update_username(new_username: str) -> tuple[bool, str]:
+        user = AuthService._current_user
+        if user is None or user.id is None:
+            return False, "Not logged in"
+        if len(new_username) < 3:
+            return False, "Username minimal 3 karakter"
+        success = User.update_username(user.id, new_username)
+        if not success:
+            return False, "Username sudah digunakan"
+        user.username = new_username
+        return True, "Username berhasil diperbarui"
+
+    @staticmethod
+    def update_password(
+        current_password: str, new_password: str
+    ) -> tuple[bool, str]:
+        user = AuthService._current_user
+        if user is None or user.id is None:
+            return False, "Not logged in"
+        current_hash = hashlib.sha256(current_password.encode()).hexdigest()
+        if user.password_hash != current_hash:
+            return False, "Password saat ini salah"
+        if len(new_password) < 6:
+            return False, "Password baru minimal 6 karakter"
+        new_hash = hashlib.sha256(new_password.encode()).hexdigest()
+        User.update_password(user.id, new_hash)
+        user.password_hash = new_hash
+        return True, "Password berhasil diperbarui"

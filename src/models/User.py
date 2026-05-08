@@ -92,3 +92,36 @@ class User:
             return True
         except sqlite3.IntegrityError:
             return False
+
+    @staticmethod
+    def find_by_id(user_id: int) -> Optional["User"]:
+        with DBContext.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, username, password_hash FROM users WHERE id = ?",
+                (user_id,),
+            )
+            row = cursor.fetchone()
+        if row:
+            return User(id=row[0], username=row[1], password_hash=row[2])
+        return None
+
+    @staticmethod
+    def update_username(user_id: int, new_username: str) -> bool:
+        try:
+            with DBContext.connect() as conn:
+                conn.execute(
+                    "UPDATE users SET username = ? WHERE id = ?",
+                    (new_username, user_id),
+                )
+            return True
+        except sqlite3.IntegrityError:
+            return False
+
+    @staticmethod
+    def update_password(user_id: int, new_password_hash: str) -> None:
+        with DBContext.connect() as conn:
+            conn.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (new_password_hash, user_id),
+            )
