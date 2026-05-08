@@ -3,6 +3,7 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QHBoxLayout, QScrollArea, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
+    CaptionLabel,
     CardWidget,
     FluentIcon,
     PrimaryPushButton,
@@ -20,26 +21,35 @@ class _AppHeader(CardWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setFixedHeight(64)
+        self.setFixedHeight(80)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 0, 16, 0)
-        layout.setSpacing(12)
+        outer = QHBoxLayout(self)
+        outer.setContentsMargins(20, 12, 16, 12)
+        outer.setSpacing(12)
 
         # SPEC FIX: wireframe labels this "Ini Branding/Logo Carbonly" — using text
         # placeholder until a logo asset is provided
-        branding = SubtitleLabel("Carbonly", self)
-        setFont(branding, 26, QFont.Weight.Bold)
-        branding.setStyleSheet(f"color: {themeColor().name()};")
+        branding_col = QVBoxLayout()
+        branding_col.setSpacing(2)
+
+        title = SubtitleLabel("Carbonly", self)
+        setFont(title, 26, QFont.Weight.Bold)
+        title.setStyleSheet(f"color: {themeColor().name()};")
+
+        tagline = CaptionLabel("Personal Carbon Footprint Tracker", self)
+        tagline.setStyleSheet("color: gray;")
+
+        branding_col.addWidget(title)
+        branding_col.addWidget(tagline)
 
         user = AuthService.get_current_user()
         username = (user.username or "") if user else ""
         self._profile_btn = PrimaryPushButton(FluentIcon.PEOPLE, username, self)
         self._profile_btn.clicked.connect(self.profile_clicked)
 
-        layout.addWidget(branding)
-        layout.addStretch(1)
-        layout.addWidget(self._profile_btn)
+        outer.addLayout(branding_col)
+        outer.addStretch(1)
+        outer.addWidget(self._profile_btn)
 
     def set_username(self, username: str) -> None:
         self._profile_btn.setText(username)
@@ -75,7 +85,7 @@ class HomePage(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("home-page")
-        self._welcome_label: TitleLabel | None = None
+        self._welcome_label: SubtitleLabel | None = None
         self._header: _AppHeader | None = None
         self._setup_ui()
 
@@ -115,8 +125,7 @@ class HomePage(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Welcome
-        self._welcome_label = TitleLabel(f"Selamat datang, {username}!", content)
-        setFont(self._welcome_label, 28, QFont.Weight.Bold)
+        self._welcome_label = SubtitleLabel(f"Selamat datang, {username}!", content)
         desc = BodyLabel("Pantau jejak karbon harian kamu di sini.", content)
         desc.setStyleSheet("color: gray;")
         layout.addWidget(self._welcome_label)
@@ -137,9 +146,7 @@ class HomePage(QWidget):
         layout.addLayout(cards_row)
 
         # Recent activity section
-        section_lbl = SubtitleLabel("Aktivitas Terbaru", content)
-        section_lbl.setStyleSheet(f"color: {themeColor().name()};")
-        layout.addWidget(section_lbl)
+        layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
         recent_card = CardWidget(content)
         recent_layout = QVBoxLayout(recent_card)
         recent_layout.setContentsMargins(20, 20, 20, 20)
