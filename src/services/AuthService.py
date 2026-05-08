@@ -1,9 +1,9 @@
 import base64
-import hashlib
 import json
 from pathlib import Path
 from typing import Optional
 
+from argon2 import PasswordHasher
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -12,6 +12,7 @@ from src.models.User import User
 
 _APP_IDENTITY = b"c4rb0nly-d3skt0p-2026"
 _KDF_SALT = b"c4rb0nly-kdf-s4lt-v1"
+_ph = PasswordHasher()
 
 
 def _get_fernet() -> Fernet:
@@ -34,13 +35,16 @@ class AuthService:
     @staticmethod
     def verify_user(username: str, password: str) -> bool:
         user = User.find_by_username(username)
-        if user is None:
+        if user is None or user.password_hash is None:
             return False
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
-        if user.password_hash == password_hash:
-            AuthService._current_user = user
-            return True
-        return False
+        if not User.verify_password(user.password_hash, password):
+            return False
+        if user.id is not None and User.needs_rehash(user.password_hash):
+            new_hash = _ph.hash(password)
+            User.update_password(user.id, new_hash)
+            user.password_hash = new_hash
+        AuthService._current_user = user
+        return True
 
     @staticmethod
     def get_current_user() -> Optional[User]:
@@ -111,14 +115,13 @@ class AuthService:
         current_password: str, new_password: str
     ) -> tuple[bool, str]:
         user = AuthService._current_user
-        if user is None or user.id is None:
+        if user is None or user.id is None or user.password_hash is None:
             return False, "Not logged in"
-        current_hash = hashlib.sha256(current_password.encode()).hexdigest()
-        if user.password_hash != current_hash:
+        if not User.verify_password(user.password_hash, current_password):
             return False, "Password saat ini salah"
         if len(new_password) < 6:
             return False, "Password baru minimal 6 karakter"
-        new_hash = hashlib.sha256(new_password.encode()).hexdigest()
+        new_hash = _ph.hash(new_password)
         User.update_password(user.id, new_hash)
         user.password_hash = new_hash
         return True, "Password berhasil diperbarui"

@@ -3,6 +3,7 @@
 # ===========================
 PyQt6-Fluent-Widgets>=1.11.2
 cryptography>=42.0.0
+argon2-cffi>=23.1.0
 
 # ===========================
 # Linting & Formatting

@@ -1,8 +1,12 @@
-import hashlib
 import sqlite3
 from typing import Optional
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+
 from src.services.DBContext import DBContext
+
+_ph = PasswordHasher()
 
 
 class User:
@@ -57,7 +61,7 @@ class User:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
             if cursor.fetchone() is None:
-                password_hash = hashlib.sha256("123456".encode()).hexdigest()
+                password_hash = _ph.hash("123456")
                 cursor.execute(
                     "INSERT INTO users (username, password_hash) VALUES (?, ?)",
                     ("admin", password_hash),
@@ -84,7 +88,7 @@ class User:
                 cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
                 if cursor.fetchone() is not None:
                     return False
-                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                password_hash = _ph.hash(password)
                 cursor.execute(
                     "INSERT INTO users (username, password_hash) VALUES (?, ?)",
                     (username, password_hash),
@@ -125,3 +129,15 @@ class User:
                 "UPDATE users SET password_hash = ? WHERE id = ?",
                 (new_password_hash, user_id),
             )
+
+    @staticmethod
+    def verify_password(stored_hash: str, password: str) -> bool:
+        try:
+            _ph.verify(stored_hash, password)
+            return True
+        except VerifyMismatchError:
+            return False
+
+    @staticmethod
+    def needs_rehash(stored_hash: str) -> bool:
+        return bool(_ph.check_needs_rehash(stored_hash))
