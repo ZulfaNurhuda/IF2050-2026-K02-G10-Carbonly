@@ -42,63 +42,53 @@ class User:
 
     @staticmethod
     def create_table() -> None:
-        conn = DBContext.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL
-            )
-        """)
-        conn.commit()
-        conn.close()
+        with DBContext.connect() as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL
+                )
+            """)
 
     @staticmethod
     def seed_demo_user() -> None:
-        conn = DBContext.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
-        if cursor.fetchone() is None:
-            password_hash = hashlib.sha256("123456".encode()).hexdigest()
-            cursor.execute(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                ("admin", password_hash),
-            )
-            conn.commit()
-        conn.close()
+        with DBContext.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
+            if cursor.fetchone() is None:
+                password_hash = hashlib.sha256("123456".encode()).hexdigest()
+                cursor.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                    ("admin", password_hash),
+                )
 
     @staticmethod
     def find_by_username(username: str) -> Optional["User"]:
-        conn = DBContext.get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, username, password_hash FROM users WHERE username = ?",
-            (username,),
-        )
-        row = cursor.fetchone()
-        conn.close()
+        with DBContext.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, username, password_hash FROM users WHERE username = ?",
+                (username,),
+            )
+            row = cursor.fetchone()
         if row:
             return User(id=row[0], username=row[1], password_hash=row[2])
         return None
 
     @staticmethod
     def create_user(username: str, password: str) -> bool:
-        conn = DBContext.get_connection()
-        cursor = conn.cursor()
         try:
-            cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-            if cursor.fetchone() is not None:
-                conn.close()
-                return False
-            password_hash = hashlib.sha256(password.encode()).hexdigest()
-            cursor.execute(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                (username, password_hash),
-            )
-            conn.commit()
-            conn.close()
+            with DBContext.connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+                if cursor.fetchone() is not None:
+                    return False
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                cursor.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                    (username, password_hash),
+                )
             return True
         except sqlite3.IntegrityError:
-            conn.close()
             return False
