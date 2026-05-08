@@ -11,6 +11,8 @@ from qfluentwidgets import (
     StrongBodyLabel,
 )
 
+from src.services.AuthService import AuthService
+
 
 class LoginModal(MessageBoxBase):
     login_succeeded = pyqtSignal()
@@ -124,8 +126,6 @@ class LoginModal(MessageBoxBase):
             self._on_login()
 
     def _on_login(self):
-        from src.services.auth_service import verify_user
-
         username = self._username_input.text().strip()
         password = self._password_input.text()
 
@@ -133,15 +133,13 @@ class LoginModal(MessageBoxBase):
             self._show_error("Please enter username and password")
             return
 
-        if verify_user(username, password):
+        if AuthService.verify_user(username, password):
             self.login_succeeded.emit()
             self.accept()
         else:
             self._show_error("Invalid username or password")
 
     def _on_register(self):
-        from src.services.auth_service import register_user
-
         username = self._username_input.text().strip()
         password = self._password_input.text()
         confirm = self._confirm_input.text()
@@ -154,7 +152,7 @@ class LoginModal(MessageBoxBase):
             self._show_error("Passwords do not match")
             return
 
-        success, message = register_user(username, password)
+        success, message = AuthService.register_user(username, password)
         if success:
             self._show_success("Registration successful! Please login.")
             self._toggle_mode()

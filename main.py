@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QApplication, QDialog, QWidget
 from qfluentwidgets import FluentIcon, MSFluentWindow
 
 from src.models.User import User
-from src.pages.example import ExamplePage
+from src.pages.Example import ExamplePage
 from src.views.LoginModal import LoginModal
 
 
