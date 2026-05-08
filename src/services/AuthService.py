@@ -1,4 +1,6 @@
 import hashlib
+import json
+from pathlib import Path
 from typing import Optional
 
 from src.models.User import User
@@ -6,6 +8,9 @@ from src.models.User import User
 
 class AuthService:
     _current_user: Optional[User] = None
+    _SESSION_PATH: Path = (
+        Path(__file__).resolve().parent.parent.parent / ".carbonly_session"
+    )
 
     @staticmethod
     def verify_user(username: str, password: str) -> bool:
@@ -23,7 +28,31 @@ class AuthService:
         return AuthService._current_user
 
     @staticmethod
-    def logout() -> None:
+    def save_session() -> None:
+        user = AuthService._current_user
+        if user is None or user.id is None:
+            return
+        AuthService._SESSION_PATH.write_text(json.dumps({"user_id": user.id}))
+
+    @staticmethod
+    def load_session() -> bool:
+        if not AuthService._SESSION_PATH.exists():
+            return False
+        try:
+            data = json.loads(AuthService._SESSION_PATH.read_text())
+            user = User.find_by_id(int(data["user_id"]))
+            if user is None:
+                AuthService._SESSION_PATH.unlink(missing_ok=True)
+                return False
+            AuthService._current_user = user
+            return True
+        except Exception:
+            AuthService._SESSION_PATH.unlink(missing_ok=True)
+            return False
+
+    @staticmethod
+    def clear_session() -> None:
+        AuthService._SESSION_PATH.unlink(missing_ok=True)
         AuthService._current_user = None
 
     @staticmethod

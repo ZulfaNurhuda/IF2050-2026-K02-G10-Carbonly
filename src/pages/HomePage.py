@@ -27,8 +27,6 @@ class _AppHeader(CardWidget):
         outer.setContentsMargins(20, 12, 16, 12)
         outer.setSpacing(12)
 
-        # SPEC FIX: wireframe labels this "Ini Branding/Logo Carbonly" — using text
-        # placeholder until a logo asset is provided
         branding_col = QVBoxLayout()
         branding_col.setSpacing(2)
 
@@ -105,12 +103,10 @@ class HomePage(QWidget):
         outer.setContentsMargins(16, 16, 16, 16)
         outer.setSpacing(16)
 
-        # ─── In-app header (fixed, non-scrolling) ───
         self._header = _AppHeader(self)
         self._header.profile_clicked.connect(self.profile_requested)
         outer.addWidget(self._header)
 
-        # ─── Scrollable content area ───
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
@@ -124,14 +120,12 @@ class HomePage(QWidget):
         layout.setSpacing(24)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # Welcome
         self._welcome_label = SubtitleLabel(f"Selamat datang, {username}!", content)
         desc = BodyLabel("Pantau jejak karbon harian kamu di sini.", content)
         desc.setStyleSheet("color: gray;")
         layout.addWidget(self._welcome_label)
         layout.addWidget(desc)
 
-        # Summary stat cards
         cards_row = QHBoxLayout()
         cards_row.setSpacing(16)
         cards_row.addWidget(
@@ -145,8 +139,8 @@ class HomePage(QWidget):
         )
         layout.addLayout(cards_row)
 
-        # Recent activity section
         layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
+
         recent_card = CardWidget(content)
         recent_layout = QVBoxLayout(recent_card)
         recent_layout.setContentsMargins(20, 20, 20, 20)

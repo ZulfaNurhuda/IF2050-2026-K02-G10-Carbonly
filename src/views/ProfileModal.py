@@ -51,7 +51,6 @@ class ProfileModal(MessageBoxBase):
         user = AuthService.get_current_user()
         current_username = user.username or "" if user else ""
 
-        # ─── Change username section ───
         self.viewLayout.addWidget(SubtitleLabel("Ganti Username", self))
 
         self.viewLayout.addWidget(StrongBodyLabel("Username Baru", self))
@@ -73,13 +72,11 @@ class ProfileModal(MessageBoxBase):
         btn_username.clicked.connect(self._on_update_username)
         self.viewLayout.addWidget(btn_username)
 
-        # Separator
         sep = QFrame(self)
         sep.setFrameShape(QFrame.Shape.HLine)
         sep.setStyleSheet("color: rgba(0, 0, 0, 0.08);")
         self.viewLayout.addWidget(sep)
 
-        # ─── Change password section ───
         self.viewLayout.addWidget(SubtitleLabel("Ganti Password", self))
 
         self.viewLayout.addWidget(StrongBodyLabel("Password Saat Ini", self))
@@ -114,7 +111,6 @@ class ProfileModal(MessageBoxBase):
         btn_password.clicked.connect(self._on_update_password)
         self.viewLayout.addWidget(btn_password)
 
-        # Hide default dialog buttons
         self.yesButton.setVisible(False)
         self.cancelButton.setVisible(False)
         self.buttonGroup.setFixedHeight(0)

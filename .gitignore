@@ -104,3 +104,8 @@ coverage.xml
 # ===========================
 *.prof
 profiling_results/
+
+# ===========================
+# Carbonly Session File
+# ===========================
+.carbonly_session

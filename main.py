@@ -52,7 +52,7 @@ class MainWindow(MSFluentWindow):
         self.home_interface.refresh()
 
     def _logout(self) -> None:
-        AuthService.logout()
+        AuthService.clear_session()
         _run_login(self)
 
 
@@ -69,6 +69,7 @@ def _run_login(window: MainWindow) -> None:
     login_modal = LoginModal(window)
 
     def on_accepted() -> None:
+        AuthService.save_session()
         window.removeEventFilter(resize_filter)
         overlay.close()
         overlay.deleteLater()
@@ -89,6 +90,9 @@ if __name__ == "__main__":
     w = MainWindow()
     w.show()
 
-    _run_login(w)
+    if AuthService.load_session():
+        w.home_interface.refresh()
+    else:
+        _run_login(w)
 
     app.exec()
