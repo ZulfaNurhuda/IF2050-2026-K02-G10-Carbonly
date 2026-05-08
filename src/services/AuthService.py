@@ -1,9 +1,12 @@
 import hashlib
+import hmac
 import json
 from pathlib import Path
 from typing import Optional
 
 from src.models.User import User
+
+_SESSION_SIGN_KEY = b"c4rb0nly-d3skt0p-2026"
 
 
 class AuthService:
@@ -11,6 +14,12 @@ class AuthService:
     _SESSION_PATH: Path = (
         Path(__file__).resolve().parent.parent.parent / ".carbonly_session"
     )
+
+    @staticmethod
+    def _sign(user_id: int) -> str:
+        return hmac.digest(
+            _SESSION_SIGN_KEY, str(user_id).encode(), hashlib.sha256
+        ).hex()
 
     @staticmethod
     def verify_user(username: str, password: str) -> bool:
@@ -32,7 +41,8 @@ class AuthService:
         user = AuthService._current_user
         if user is None or user.id is None:
             return
-        AuthService._SESSION_PATH.write_text(json.dumps({"user_id": user.id}))
+        payload = {"user_id": user.id, "sig": AuthService._sign(user.id)}
+        AuthService._SESSION_PATH.write_text(json.dumps(payload))
 
     @staticmethod
     def load_session() -> bool:
@@ -40,7 +50,11 @@ class AuthService:
             return False
         try:
             data = json.loads(AuthService._SESSION_PATH.read_text())
-            user = User.find_by_id(int(data["user_id"]))
+            user_id = int(data["user_id"])
+            if not hmac.compare_digest(str(data["sig"]), AuthService._sign(user_id)):
+                AuthService._SESSION_PATH.unlink(missing_ok=True)
+                return False
+            user = User.find_by_id(user_id)
             if user is None:
                 AuthService._SESSION_PATH.unlink(missing_ok=True)
                 return False
