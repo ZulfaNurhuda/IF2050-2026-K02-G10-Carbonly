@@ -59,7 +59,11 @@ class _StatCard(CardWidget):
         layout.setSpacing(6)
 
         layout.addWidget(BodyLabel(title, self))
-        layout.addWidget(TitleLabel(value, self))
+
+        value_lbl = TitleLabel(value, self)
+        value_lbl.setStyleSheet(f"color: {themeColor().name()};")
+        layout.addWidget(value_lbl)
+
         unit_lbl = BodyLabel(unit, self)
         unit_lbl.setStyleSheet("color: gray;")
         layout.addWidget(unit_lbl)
@@ -100,8 +104,11 @@ class HomePage(QWidget):
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+        scroll.viewport().setAutoFillBackground(False)
 
         content = QWidget()
+        content.setAutoFillBackground(False)
         layout = QVBoxLayout(content)
         layout.setContentsMargins(4, 8, 4, 8)
         layout.setSpacing(24)
@@ -109,6 +116,7 @@ class HomePage(QWidget):
 
         # Welcome
         self._welcome_label = TitleLabel(f"Selamat datang, {username}!", content)
+        setFont(self._welcome_label, 28, QFont.Weight.Bold)
         desc = BodyLabel("Pantau jejak karbon harian kamu di sini.", content)
         desc.setStyleSheet("color: gray;")
         layout.addWidget(self._welcome_label)
@@ -129,7 +137,9 @@ class HomePage(QWidget):
         layout.addLayout(cards_row)
 
         # Recent activity section
-        layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
+        section_lbl = SubtitleLabel("Aktivitas Terbaru", content)
+        section_lbl.setStyleSheet(f"color: {themeColor().name()};")
+        layout.addWidget(section_lbl)
         recent_card = CardWidget(content)
         recent_layout = QVBoxLayout(recent_card)
         recent_layout.setContentsMargins(20, 20, 20, 20)
