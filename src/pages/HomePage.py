@@ -1,14 +1,15 @@
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QHBoxLayout, QScrollArea, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CardWidget,
     FluentIcon,
-    StrongBodyLabel,
+    PrimaryPushButton,
     SubtitleLabel,
     TitleLabel,
-    TransparentPushButton,
     setFont,
+    themeColor,
 )
 
 from src.services.AuthService import AuthService
@@ -27,12 +28,13 @@ class _AppHeader(CardWidget):
 
         # SPEC FIX: wireframe labels this "Ini Branding/Logo Carbonly" — using text
         # placeholder until a logo asset is provided
-        branding = StrongBodyLabel("Carbonly", self)
-        setFont(branding, 16)
+        branding = SubtitleLabel("Carbonly", self)
+        setFont(branding, 26, QFont.Weight.Bold)
+        branding.setStyleSheet(f"color: {themeColor().name()};")
 
         user = AuthService.get_current_user()
         username = (user.username or "") if user else ""
-        self._profile_btn = TransparentPushButton(FluentIcon.PEOPLE, username, self)
+        self._profile_btn = PrimaryPushButton(FluentIcon.PEOPLE, username, self)
         self._profile_btn.clicked.connect(self.profile_clicked)
 
         layout.addWidget(branding)
