@@ -1,6 +1,7 @@
 import os
 import sys
 
+from PyQt6.QtCore import QEvent, QObject
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QDialog, QWidget
 from qfluentwidgets import FluentIcon, MSFluentWindow
@@ -8,6 +9,17 @@ from qfluentwidgets import FluentIcon, MSFluentWindow
 from src.models.User import User
 from src.pages.example import ExamplePage
 from src.views.LoginModal import LoginModal
+
+
+class _OverlayResizeFilter(QObject):
+    def __init__(self, overlay: QWidget, parent=None):
+        super().__init__(parent)
+        self._overlay = overlay
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Resize:
+            self._overlay.setGeometry(obj.rect())
+        return False
 
 
 class MainWindow(MSFluentWindow):
@@ -38,9 +50,13 @@ if __name__ == "__main__":
     overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.4);")
     overlay.show()
 
+    _resize_filter = _OverlayResizeFilter(overlay, w)
+    w.installEventFilter(_resize_filter)
+
     login_modal = LoginModal(w)
 
     def on_login_finished():
+        w.removeEventFilter(_resize_filter)
         overlay.close()
         overlay.deleteLater()
 
