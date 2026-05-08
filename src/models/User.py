@@ -1,18 +1,17 @@
 import hashlib
 import sqlite3
-from pathlib import Path
 from typing import Optional
+
+from src.services.DBContext import DBContext
 
 
 class User:
-    _DB_PATH = str(Path(__file__).resolve().parent.parent.parent / "carbonly.db")
-
     def __init__(
         self,
         id: Optional[int] = None,
         username: Optional[str] = None,
         password_hash: Optional[str] = None,
-    ):
+    ) -> None:
         self._id = id
         self._username = username
         self._password_hash = password_hash
@@ -22,7 +21,7 @@ class User:
         return self._id
 
     @id.setter
-    def id(self, value: Optional[int]):
+    def id(self, value: Optional[int]) -> None:
         self._id = value
 
     @property
@@ -30,7 +29,7 @@ class User:
         return self._username
 
     @username.setter
-    def username(self, value: Optional[str]):
+    def username(self, value: Optional[str]) -> None:
         self._username = value
 
     @property
@@ -38,16 +37,12 @@ class User:
         return self._password_hash
 
     @password_hash.setter
-    def password_hash(self, value: Optional[str]):
+    def password_hash(self, value: Optional[str]) -> None:
         self._password_hash = value
 
     @staticmethod
-    def _get_connection() -> sqlite3.Connection:
-        return sqlite3.connect(User._DB_PATH)
-
-    @staticmethod
     def create_table() -> None:
-        conn = User._get_connection()
+        conn = DBContext.get_connection()
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -61,7 +56,7 @@ class User:
 
     @staticmethod
     def seed_demo_user() -> None:
-        conn = User._get_connection()
+        conn = DBContext.get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
         if cursor.fetchone() is None:
@@ -75,7 +70,7 @@ class User:
 
     @staticmethod
     def find_by_username(username: str) -> Optional["User"]:
-        conn = User._get_connection()
+        conn = DBContext.get_connection()
         cursor = conn.cursor()
         cursor.execute(
             "SELECT id, username, password_hash FROM users WHERE username = ?",
@@ -89,7 +84,7 @@ class User:
 
     @staticmethod
     def create_user(username: str, password: str) -> bool:
-        conn = User._get_connection()
+        conn = DBContext.get_connection()
         cursor = conn.cursor()
         try:
             cursor.execute("SELECT id FROM users WHERE username = ?", (username,))

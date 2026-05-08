@@ -1,5 +1,7 @@
+from typing import cast
+
 from PyQt6 import QtCore
-from PyQt6.QtCore import QEvent, Qt, pyqtSignal
+from PyQt6.QtCore import QEvent, QObject, Qt, pyqtSignal
 from PyQt6.QtWidgets import QLineEdit as QLineEditBase
 from PyQt6.QtWidgets import QPushButton
 from qfluentwidgets import (
@@ -17,21 +19,21 @@ from src.services.AuthService import AuthService
 class LoginModal(MessageBoxBase):
     login_succeeded = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Login")
-        self._is_register_mode = False
+        self._is_register_mode: bool = False
         self._setup_ui()
         self._connect_enter_key()
         self._setup_close_button()
         self.widget.installEventFilter(self)
 
-    def eventFilter(self, obj, event):  # noqa: N802
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802
         if obj == self.widget and event.type() == QEvent.Type.Resize:
             self._close_btn.move(self.widget.width() - 36, 4)
-        return super().eventFilter(obj, event)
+        return cast(bool, super().eventFilter(obj, event))
 
-    def _setup_close_button(self):
+    def _setup_close_button(self) -> None:
         self._close_btn = QPushButton("", self.widget)
         self._close_btn.setFixedSize(24, 24)
         self._close_btn.setIcon(FluentIcon.CLOSE.icon())
@@ -49,7 +51,7 @@ class LoginModal(MessageBoxBase):
         self._close_btn.clicked.connect(self.reject)
         self._close_btn.move(self.widget.width() - 36, 4)
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         self.username_label = StrongBodyLabel("Username", self)
         self._username_input = LineEdit(self)
         self._username_input.setPlaceholderText("Enter username")
@@ -97,12 +99,12 @@ class LoginModal(MessageBoxBase):
 
         self.widget.setMinimumWidth(360)
 
-    def _connect_enter_key(self):
+    def _connect_enter_key(self) -> None:
         self._username_input.returnPressed.connect(self._on_submit)
         self._password_input.returnPressed.connect(self._on_submit)
         self._confirm_input.returnPressed.connect(self._on_submit)
 
-    def _toggle_mode(self):
+    def _toggle_mode(self) -> None:
         self._is_register_mode = not self._is_register_mode
         if self._is_register_mode:
             self.setWindowTitle("Register")
@@ -119,15 +121,15 @@ class LoginModal(MessageBoxBase):
             self._confirm_input.setVisible(False)
             self._error_label.setVisible(False)
 
-    def _on_submit(self):
+    def _on_submit(self) -> None:
         if self._is_register_mode:
             self._on_register()
         else:
             self._on_login()
 
-    def _on_login(self):
-        username = self._username_input.text().strip()
-        password = self._password_input.text()
+    def _on_login(self) -> None:
+        username: str = self._username_input.text().strip()
+        password: str = self._password_input.text()
 
         if not username or not password:
             self._show_error("Please enter username and password")
@@ -139,10 +141,10 @@ class LoginModal(MessageBoxBase):
         else:
             self._show_error("Invalid username or password")
 
-    def _on_register(self):
-        username = self._username_input.text().strip()
-        password = self._password_input.text()
-        confirm = self._confirm_input.text()
+    def _on_register(self) -> None:
+        username: str = self._username_input.text().strip()
+        password: str = self._password_input.text()
+        confirm: str = self._confirm_input.text()
 
         if not username or not password or not confirm:
             self._show_error("Please fill in all fields")
@@ -152,6 +154,8 @@ class LoginModal(MessageBoxBase):
             self._show_error("Passwords do not match")
             return
 
+        success: bool
+        message: str
         success, message = AuthService.register_user(username, password)
         if success:
             self._show_success("Registration successful! Please login.")
@@ -159,12 +163,12 @@ class LoginModal(MessageBoxBase):
         else:
             self._show_error(message)
 
-    def _show_error(self, message: str):
+    def _show_error(self, message: str) -> None:
         self._error_label.setStyleSheet("color: red;")
         self._error_label.setText(message)
         self._error_label.setVisible(True)
 
-    def _show_success(self, message: str):
+    def _show_success(self, message: str) -> None:
         self._error_label.setStyleSheet("color: green;")
         self._error_label.setText(message)
         self._error_label.setVisible(True)

@@ -12,18 +12,18 @@ from src.views.LoginModal import LoginModal
 
 
 class _OverlayResizeFilter(QObject):
-    def __init__(self, overlay: QWidget, parent=None):
+    def __init__(self, overlay: QWidget, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._overlay = overlay
 
-    def eventFilter(self, obj, event):
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802
         if event.type() == QEvent.Type.Resize:
             self._overlay.setGeometry(obj.rect())
         return False
 
 
 class MainWindow(MSFluentWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.example_interface = ExamplePage(self)
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     login_modal = LoginModal(w)
 
-    def on_login_finished():
+    def on_login_finished() -> None:
         w.removeEventFilter(_resize_filter)
         overlay.close()
         overlay.deleteLater()
