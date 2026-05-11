@@ -1,5 +1,8 @@
 from datetime import datetime
-from typing import List
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.models.LogAktivitas import LogAktivitas
 
 
 class RekapitulasiController:
@@ -26,7 +29,21 @@ class RekapitulasiController:
     def dapatkanRekapitulasi(
         self, tanggalMulai: datetime, tanggalAkhir: datetime
     ) -> object:
-        pass
+        if not self.logAktivitasController or not self.targetEmisiController:
+            return {"total_emisi": 0.0, "target_emisi": 0.0}
+
+        daftar_log = self.logAktivitasController.dapatkanLogRentang(tanggalMulai, tanggalAkhir)
+        total_emisi = self.hitungTotalEmisi(daftar_log) if daftar_log else 0.0
+        
+        target = self.targetEmisiController.dapatkanTarget()
+        target_emisi = target.nilaiTarget if target and target.nilaiTarget is not None else 0.0
+        
+        return {
+            "total_emisi": total_emisi,
+            "target_emisi": target_emisi
+        }
 
     def hitungTotalEmisi(self, daftarLog: List["LogAktivitas"]) -> float:
-        pass
+        if not daftarLog:
+            return 0.0
+        return sum(log.totalEmisi for log in daftarLog if log.totalEmisi is not None)
