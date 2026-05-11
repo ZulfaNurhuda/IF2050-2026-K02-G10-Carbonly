@@ -1,4 +1,5 @@
 from argon2 import PasswordHasher
+from argon2.exceptions import HashingError
 
 from src.models.User import User
 from src.services.AuthService import AuthService
@@ -17,9 +18,12 @@ class AuthController:
         if not User.verify_password(user.password_hash, password):
             return False, "Invalid username or password"
         if user.id is not None and User.needs_rehash(user.password_hash):
-            new_hash = _ph.hash(password)
-            User.update_password(user.id, new_hash)
-            user.password_hash = new_hash
+            try:
+                new_hash = _ph.hash(password)
+                if User.update_password(user.id, new_hash):
+                    user.password_hash = new_hash
+            except HashingError:
+                pass
         AuthService.set_current_user(user)
         AuthService.save_session()
         return True, ""
@@ -64,6 +68,8 @@ class AuthController:
         user = AuthService.get_current_user()
         if user is None or user.id is None:
             return False, "Not logged in"
+        if user.username == new_username:
+            return False, "Username baru tidak boleh sama dengan username saat ini"
         if not User.update_username(user.id, new_username):
             return False, "Username sudah digunakan"
         user.username = new_username
@@ -82,7 +88,13 @@ class AuthController:
             return False, "Not logged in"
         if not User.verify_password(user.password_hash, current):
             return False, "Password saat ini salah"
-        new_hash = _ph.hash(new_pass)
-        User.update_password(user.id, new_hash)
+        if current == new_pass:
+            return False, "Password baru tidak boleh sama dengan password saat ini"
+        try:
+            new_hash = _ph.hash(new_pass)
+        except HashingError:
+            return False, "Gagal memperbarui password, coba lagi"
+        if not User.update_password(user.id, new_hash):
+            return False, "Gagal memperbarui password, coba lagi"
         user.password_hash = new_hash
         return True, "Password berhasil diperbarui"

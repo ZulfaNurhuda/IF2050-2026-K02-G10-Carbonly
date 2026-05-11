@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
@@ -43,8 +43,11 @@ class AuthService:
         user = AuthService._current_user
         if user is None or user.id is None:
             return
-        payload = json.dumps({"user_id": user.id}).encode()
-        AuthService._SESSION_PATH.write_bytes(_get_fernet().encrypt(payload))
+        try:
+            payload = json.dumps({"user_id": user.id}).encode()
+            AuthService._SESSION_PATH.write_bytes(_get_fernet().encrypt(payload))
+        except Exception:
+            pass
 
     @staticmethod
     def load_session() -> Optional[User]:
@@ -57,7 +60,7 @@ class AuthService:
             if user is None:
                 AuthService._SESSION_PATH.unlink(missing_ok=True)
             return user
-        except (InvalidToken, Exception):
+        except Exception:
             AuthService._SESSION_PATH.unlink(missing_ok=True)
             return None
 

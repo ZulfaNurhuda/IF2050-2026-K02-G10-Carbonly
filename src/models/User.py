@@ -2,7 +2,12 @@ import sqlite3
 from typing import Optional
 
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import (
+    HashingError,
+    InvalidHashError,
+    VerificationError,
+    VerifyMismatchError,
+)
 
 from src.services.DBContext import DBContext
 
@@ -59,28 +64,36 @@ class User:
     def seed_demo_user() -> None:
         demo_username = "CarbonlyAdmin"
         demo_password = "123456"  # nosec B105
-        with DBContext.connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id FROM users WHERE username = ?", (demo_username,))
-            if cursor.fetchone() is None:
-                password_hash = _ph.hash(demo_password)
+        try:
+            with DBContext.connect() as conn:
+                cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                    (demo_username, password_hash),
+                    "SELECT id FROM users WHERE username = ?", (demo_username,)
                 )
+                if cursor.fetchone() is None:
+                    password_hash = _ph.hash(demo_password)
+                    cursor.execute(
+                        "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                        (demo_username, password_hash),
+                    )
+        except (sqlite3.Error, HashingError):
+            pass
 
     @staticmethod
     def find_by_username(username: str) -> Optional["User"]:
-        with DBContext.connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT id, username, password_hash FROM users WHERE username = ?",
-                (username,),
-            )
-            row = cursor.fetchone()
-        if row:
-            return User(id=row[0], username=row[1], password_hash=row[2])
-        return None
+        try:
+            with DBContext.connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, username, password_hash FROM users WHERE username = ?",
+                    (username,),
+                )
+                row = cursor.fetchone()
+            if row:
+                return User(id=row[0], username=row[1], password_hash=row[2])
+            return None
+        except sqlite3.Error:
+            return None
 
     @staticmethod
     def create_user(username: str, password: str) -> bool:
@@ -96,21 +109,24 @@ class User:
                     (username, password_hash),
                 )
             return True
-        except sqlite3.IntegrityError:
+        except (sqlite3.Error, HashingError):
             return False
 
     @staticmethod
     def find_by_id(user_id: int) -> Optional["User"]:
-        with DBContext.connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT id, username, password_hash FROM users WHERE id = ?",
-                (user_id,),
-            )
-            row = cursor.fetchone()
-        if row:
-            return User(id=row[0], username=row[1], password_hash=row[2])
-        return None
+        try:
+            with DBContext.connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, username, password_hash FROM users WHERE id = ?",
+                    (user_id,),
+                )
+                row = cursor.fetchone()
+            if row:
+                return User(id=row[0], username=row[1], password_hash=row[2])
+            return None
+        except sqlite3.Error:
+            return None
 
     @staticmethod
     def update_username(user_id: int, new_username: str) -> bool:
@@ -121,23 +137,27 @@ class User:
                     (new_username, user_id),
                 )
             return True
-        except sqlite3.IntegrityError:
+        except sqlite3.Error:
             return False
 
     @staticmethod
-    def update_password(user_id: int, new_password_hash: str) -> None:
-        with DBContext.connect() as conn:
-            conn.execute(
-                "UPDATE users SET password_hash = ? WHERE id = ?",
-                (new_password_hash, user_id),
-            )
+    def update_password(user_id: int, new_password_hash: str) -> bool:
+        try:
+            with DBContext.connect() as conn:
+                conn.execute(
+                    "UPDATE users SET password_hash = ? WHERE id = ?",
+                    (new_password_hash, user_id),
+                )
+            return True
+        except sqlite3.Error:
+            return False
 
     @staticmethod
     def verify_password(stored_hash: str, password: str) -> bool:
         try:
             _ph.verify(stored_hash, password)
             return True
-        except VerifyMismatchError:
+        except (VerifyMismatchError, VerificationError, InvalidHashError):
             return False
 
     @staticmethod
