@@ -2,6 +2,7 @@
 # Application
 # ===========================
 PyQt6-Fluent-Widgets>=1.11.2
+PyQt6-Charts>=6.6.0
 
 # ===========================
 # Linting & Formatting
