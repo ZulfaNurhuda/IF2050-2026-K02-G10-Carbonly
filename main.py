@@ -9,6 +9,7 @@ from qfluentwidgets import FluentIcon, MSFluentWindow
 from src.models.User import User
 from src.pages.Example import ExamplePage
 from src.views.LoginModal import LoginModal
+from src.models.TargetEmisi import TargetEmisi
 
 
 class _OverlayResizeFilter(QObject):
@@ -38,6 +39,7 @@ class MainWindow(MSFluentWindow):
 
 if __name__ == "__main__":
     User.create_table()
+    TargetEmisi.create_table()
     if os.environ.get("CARBONLY_DEBUG") == "1":
         User.seed_demo_user()
 
