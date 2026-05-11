@@ -163,7 +163,8 @@ class RekapitulasiView(QWidget):
             
         if self.current_mode == "Harian":
             self.date_label.setText(self.current_date.strftime("%d %B %Y"))
-            data = self._controller.dapatkanDataHarian(self.current_date)
+            # Panggil method sesuai class diagram DPPL
+            data = self._controller.dapatkanRekapitulasi(self.current_date, self.current_date)
             
             total_emisi = data.get("total_emisi", 0.0)
             target_emisi = data.get("target_emisi", 0.0)
@@ -199,7 +200,8 @@ class RekapitulasiView(QWidget):
             end_date = start_date + timedelta(days=6)
             self.date_label.setText(f"{start_date.strftime('%d %b %Y')} - {end_date.strftime('%d %b %Y')}")
             
-            data = self._controller.dapatkanDataMingguan(start_date, end_date)
+            # Panggil method sesuai class diagram DPPL
+            data = self._controller.dapatkanRekapitulasi(start_date, end_date)
             emisi_per_hari = data.get("emisi_per_hari", [])
             
             # Update Chart
