@@ -1,4 +1,9 @@
 from typing import Optional
+import sqlite3
+import os
+
+
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "carbonly.db")
 
 
 class KoefisienEmisi:
@@ -47,5 +52,25 @@ class KoefisienEmisi:
         self._satuan = value
 
     @staticmethod
-    def dapatkanBerdasarkanKategori(kategori: str) -> "KoefisienEmisi":
-        pass
+    def dapatkanBerdasarkanKategori(kategori: str) -> Optional["KoefisienEmisi"]:
+        """Mengambil data koefisien emisi dari DB berdasarkan nama kategori."""
+        db_path = os.path.abspath(DB_PATH)
+        conn = sqlite3.connect(db_path)
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT id, kategori, nilai_koefisien, satuan "
+                "FROM koefisien_emisi WHERE kategori = ?",
+                (kategori,),
+            )
+            row = cursor.fetchone()
+            if row:
+                return KoefisienEmisi(
+                    id=row[0],
+                    kategori=row[1],
+                    nilaiKoefisien=row[2],
+                    satuan=row[3],
+                )
+            return None
+        finally:
+            conn.close()
