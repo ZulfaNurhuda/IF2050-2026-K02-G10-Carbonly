@@ -68,7 +68,6 @@ class LogAktivitas:
         self._totalEmisi = value
 
     def ubah(self, data: "LogAktivitas") -> None:
-        """Menyalin semua field dari objek LogAktivitas lain ke objek ini."""
         self._tanggal = data._tanggal
         self._kategori = data._kategori
         self._nilaiAktivitas = data._nilaiAktivitas
@@ -76,7 +75,6 @@ class LogAktivitas:
         self._totalEmisi = data._totalEmisi
 
     def validasiInput(self) -> bool:
-        """Memvalidasi bahwa semua field wajib terisi dan nilaiAktivitas > 0."""
         if self._tanggal is None:
             return False
         if not self._kategori or not self._kategori.strip():
@@ -88,6 +86,5 @@ class LogAktivitas:
         return True
 
     def hitungEmisi(self, koefisien: "KoefisienEmisi") -> None:
-        """Menghitung totalEmisi = nilaiAktivitas * nilaiKoefisien."""
         if koefisien is not None and self._nilaiAktivitas is not None:
             self._totalEmisi = self._nilaiAktivitas * koefisien.nilaiKoefisien

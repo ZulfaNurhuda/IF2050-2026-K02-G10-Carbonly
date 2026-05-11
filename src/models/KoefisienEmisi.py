@@ -53,7 +53,6 @@ class KoefisienEmisi:
 
     @staticmethod
     def dapatkanBerdasarkanKategori(kategori: str) -> Optional["KoefisienEmisi"]:
-        """Mengambil data koefisien emisi dari DB berdasarkan nama kategori."""
         db_path = os.path.abspath(DB_PATH)
         conn = sqlite3.connect(db_path)
         try:

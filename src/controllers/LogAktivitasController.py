@@ -15,10 +15,6 @@ class LogAktivitasController:
         self._db_path = os.path.abspath(DB_PATH)
         self._inisialisasiDatabase()
 
-    # ------------------------------------------------------------------ #
-    #  Properties                                                          #
-    # ------------------------------------------------------------------ #
-
     @property
     def logAktivitas(self) -> Optional[LogAktivitas]:
         return self._logAktivitas
@@ -27,17 +23,12 @@ class LogAktivitasController:
     def logAktivitas(self, value: Optional[LogAktivitas]):
         self._logAktivitas = value
 
-    # ------------------------------------------------------------------ #
-    #  Database helpers                                                    #
-    # ------------------------------------------------------------------ #
-
     def _koneksi(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self._db_path)
         conn.row_factory = sqlite3.Row
         return conn
 
     def _inisialisasiDatabase(self) -> None:
-        """Membuat tabel log_aktivitas dan koefisien_emisi jika belum ada."""
         conn = self._koneksi()
         try:
             cursor = conn.cursor()
@@ -93,12 +84,7 @@ class LogAktivitasController:
             totalEmisi=row["total_emisi"],
         )
 
-    # ------------------------------------------------------------------ #
-    #  CRUD Operations                                                     #
-    # ------------------------------------------------------------------ #
-
     def dapatkanDaftarLog(self) -> List[LogAktivitas]:
-        """Mengambil semua log aktivitas dari database, diurutkan terbaru."""
         conn = self._koneksi()
         try:
             cursor = conn.cursor()
@@ -112,14 +98,9 @@ class LogAktivitasController:
             conn.close()
 
     def tambahLog(self, data: LogAktivitas) -> None:
-        """Menyimpan referensi log yang sedang diedit/ditambah."""
         self._logAktivitas = data
 
     def ubahLog(self, data: LogAktivitas) -> bool:
-        """
-        Memvalidasi dan mengupdate log di database.
-        Returns True jika berhasil, False jika validasi gagal.
-        """
         if not data.validasiInput():
             return False
 
@@ -151,10 +132,6 @@ class LogAktivitasController:
             conn.close()
 
     def simpanLog(self, data: LogAktivitas) -> bool:
-        """
-        Memvalidasi input, menghitung emisi, lalu INSERT atau UPDATE ke database.
-        Returns True jika berhasil, False jika validasi gagal.
-        """
         if not data.validasiInput():
             return False
 
@@ -165,7 +142,6 @@ class LogAktivitasController:
         try:
             cursor = conn.cursor()
             if data.id is None:
-                # INSERT baru
                 cursor.execute(
                     "INSERT INTO log_aktivitas "
                     "(tanggal, kategori, nilai_aktivitas, satuan_aktivitas, total_emisi) "
@@ -180,7 +156,6 @@ class LogAktivitasController:
                 )
                 data.id = cursor.lastrowid
             else:
-                # UPDATE yang sudah ada
                 cursor.execute(
                     "UPDATE log_aktivitas SET "
                     "tanggal = ?, kategori = ?, nilai_aktivitas = ?, "
@@ -202,7 +177,6 @@ class LogAktivitasController:
             conn.close()
 
     def hapusLog(self, id: int) -> None:
-        """Menghapus log aktivitas berdasarkan ID."""
         conn = self._koneksi()
         try:
             conn.execute("DELETE FROM log_aktivitas WHERE id = ?", (id,))
@@ -213,7 +187,6 @@ class LogAktivitasController:
     def dapatkanLogRentang(
         self, tanggalMulai: datetime, tanggalAkhir: datetime
     ) -> List[LogAktivitas]:
-        """Mengambil log aktivitas dalam rentang tanggal tertentu."""
         conn = self._koneksi()
         try:
             cursor = conn.cursor()
