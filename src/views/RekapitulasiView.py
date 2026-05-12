@@ -62,8 +62,9 @@ class RekapitulasiView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.pivot = SegmentedWidget(self)
-        self.pivot.addItem("Harian", "Harian", self.onModeChanged)
-        self.pivot.addItem("Mingguan", "Mingguan", self.onModeChanged)
+        self.pivot.addItem("Harian", "Harian")
+        self.pivot.addItem("Mingguan", "Mingguan")
+        self.pivot.currentItemChanged.connect(self.onModeChanged)
         self.main_layout.addWidget(self.pivot, 0, Qt.AlignmentFlag.AlignLeft)
 
         self.nav_layout = QHBoxLayout()
@@ -173,19 +174,23 @@ class RekapitulasiView(QWidget):
         for axis in self.chart.axes():
             self.chart.removeAxis(axis)
 
-        emisi_per_hari = []
+        values_by_date = {}
         if self._controller is not None:
             data = self._controller.dapatkanRekapitulasi(week_start, week_end)
             emisi_per_hari = data.get("emisi_per_hari", [])
+            for d, val in emisi_per_hari:
+                values_by_date[d.date()] = val
 
         series = QBarSeries()
         bar_set = QBarSet("Emisi Harian")
         categories = []
         max_val = 0
 
-        for d, val in emisi_per_hari:
+        for i in range(7):
+            day = week_start + timedelta(days=i)
+            val = values_by_date.get(day.date(), 0.0)
             bar_set.append(val)
-            categories.append(d.strftime("%a"))
+            categories.append(day.strftime("%a"))
             if val > max_val:
                 max_val = val
 
