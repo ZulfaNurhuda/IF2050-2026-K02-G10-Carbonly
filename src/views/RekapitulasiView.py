@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from src.controllers.RekapitulasiController import RekapitulasiController
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QFont, QPainter
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
 from qfluentwidgets import (
@@ -107,6 +107,7 @@ class RekapitulasiView(QWidget):
 
         self.chart_view = QChartView(self.chart)
         self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.chart_view.setMinimumHeight(280)
         self.main_layout.addWidget(self.chart_view, 1)
 
         self.pivot.setCurrentItem("Harian")
@@ -199,12 +200,15 @@ class RekapitulasiView(QWidget):
 
         axisX = QBarCategoryAxis()
         axisX.append(categories)
+        axisX.setLabelsAngle(-30)
+        axisX.setLabelsFont(QFont("Segoe UI", 9))
         self.chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
         series.attachAxis(axisX)
 
         axisY = QValueAxis()
         axisY.setTitleText("kg CO2e")
         axisY.setRange(0, max_val * 1.2 if max_val > 0 else 10)
+        axisY.setLabelsFont(QFont("Segoe UI", 9))
         self.chart.addAxis(axisY, Qt.AlignmentFlag.AlignLeft)
         series.attachAxis(axisY)
 
