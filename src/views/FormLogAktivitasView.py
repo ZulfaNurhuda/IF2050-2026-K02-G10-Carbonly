@@ -30,7 +30,6 @@ from src.controllers.LogAktivitasController import LogAktivitasController
 from src.models.LogAktivitas import LogAktivitas
 
 
-KATEGORI_LIST = ["Transportasi", "Listrik", "Gas Alam", "Makanan", "Sampah"]
 SATUAN_MAP = {
     "Transportasi": "km",
     "Listrik": "kWh",
@@ -38,6 +37,8 @@ SATUAN_MAP = {
     "Makanan": "kg",
     "Sampah": "kg",
 }
+
+KATEGORI_LIST = [f"{k} ({v})" for k, v in SATUAN_MAP.items()]
 
 
 class FormLogAktivitasView(QDialog):
@@ -78,9 +79,14 @@ class FormLogAktivitasView(QDialog):
     def logTerpilih(self, value: Optional[LogAktivitas]):
         self._logTerpilih = value
 
+    @staticmethod
+    def _parseKategori(displayText: str) -> str:
+        return displayText.split(" (")[0]
+
     @property
     def inputKategori(self) -> Optional[str]:
-        return self._cbKategori.currentText() or None
+        text = self._cbKategori.currentText()
+        return self._parseKategori(text) if text else None
 
     @property
     def inputTanggal(self) -> Optional[datetime]:
@@ -96,7 +102,8 @@ class FormLogAktivitasView(QDialog):
 
     @property
     def inputSatuan(self) -> Optional[str]:
-        return self._cbSatuan.currentText() or None
+        kategori = self.inputKategori
+        return SATUAN_MAP.get(kategori) if kategori else None
 
     def _buatWidget(self):
         _white = "color: white;"
@@ -122,11 +129,6 @@ class FormLogAktivitasView(QDialog):
         self._spinNilai.setDecimals(2)
         self._spinNilai.setSingleStep(1.0)
 
-        self._lblSatuan = BodyLabel("Satuan")
-        self._lblSatuan.setStyleSheet(_white)
-        self._cbSatuan = ComboBox()
-        self._cbSatuan.addItems(list(dict.fromkeys(SATUAN_MAP.values())))
-
         self._btnSimpan = PrimaryPushButton(FluentIcon.SAVE, "Simpan")
         self._btnBatal = PushButton(FluentIcon.CLOSE, "Batal")
         self._btnSimpan.setFixedWidth(120)
@@ -140,7 +142,6 @@ class FormLogAktivitasView(QDialog):
         formLayout.addRow(self._lblKategori, self._cbKategori)
         formLayout.addRow(self._lblTanggal, self._datePicker)
         formLayout.addRow(self._lblNilai, self._spinNilai)
-        formLayout.addRow(self._lblSatuan, self._cbSatuan)
 
         btnLayout = QHBoxLayout()
         btnLayout.addStretch()
@@ -164,20 +165,12 @@ class FormLogAktivitasView(QDialog):
     def _hubungkanSinyal(self):
         self._btnSimpan.clicked.connect(self.simpanForm)
         self._btnBatal.clicked.connect(self.reject)
-        self._cbKategori.currentTextChanged.connect(self._onKategoriChanged)
-
-    def _onKategoriChanged(self, kategori: str):
-        satuan = SATUAN_MAP.get(kategori, "")
-        idx = self._cbSatuan.findText(satuan)
-        if idx >= 0:
-            self._cbSatuan.setCurrentIndex(idx)
 
     def _resetForm(self):
         self._logTerpilih = None
         self._cbKategori.setCurrentIndex(0)
         self._datePicker.setDate(QDate.currentDate())
         self._spinNilai.setValue(0.0)
-        self._cbSatuan.setCurrentIndex(0)
         self._lblJudul.setText("Catat Aktivitas Karbon")
 
     def tampilkan(self) -> None:
@@ -188,7 +181,8 @@ class FormLogAktivitasView(QDialog):
         self._logTerpilih = logData
         self._lblJudul.setText("Edit Aktivitas Karbon")
 
-        idx = self._cbKategori.findText(logData.kategori or "")
+        display_text = f"{logData.kategori or ''} ({logData.satuanAktivitas or ''})"
+        idx = self._cbKategori.findText(display_text)
         self._cbKategori.setCurrentIndex(idx if idx >= 0 else 0)
 
         if logData.tanggal:
@@ -196,9 +190,6 @@ class FormLogAktivitasView(QDialog):
             self._datePicker.setDate(qd)
 
         self._spinNilai.setValue(logData.nilaiAktivitas or 0.0)
-
-        idx_satuan = self._cbSatuan.findText(logData.satuanAktivitas or "")
-        self._cbSatuan.setCurrentIndex(idx_satuan if idx_satuan >= 0 else 0)
 
         ok = self._controller.ubahLog(logData)
         if not ok:
