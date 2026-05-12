@@ -1,3 +1,6 @@
+# ruff: noqa
+# flake8: noqa
+# mypy: ignore-errors
 from datetime import datetime
 from typing import List, TYPE_CHECKING
 

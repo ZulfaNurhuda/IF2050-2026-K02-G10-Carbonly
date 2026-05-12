@@ -3,6 +3,9 @@
 # ===========================
 PyQt6-Fluent-Widgets>=1.11.2
 PyQt6-Charts>=6.6.0
+cryptography>=42.0.0
+argon2-cffi>=23.1.0
+python-dotenv>=1.0.0
 
 # ===========================
 # Linting & Formatting
@@ -15,7 +18,7 @@ ruff>=0.15.12
 # ===========================
 # Security
 # ===========================
-bandit>=1.9.4
+bandit[toml]>=1.9.4
 pip-audit>=2.10.0
 
 # ===========================
