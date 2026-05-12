@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -38,6 +38,8 @@ class LogAktivitasPage(QWidget):
     'Tambah Log' di pojok kanan atas yang membuka FormLogAktivitasView
     sebagai dialog modal.
     """
+
+    data_changed = pyqtSignal()
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
@@ -227,3 +229,5 @@ class LogAktivitasPage(QWidget):
         # Reset seleksi & tombol aksi
         self._btnEdit.setEnabled(False)
         self._btnHapus.setEnabled(False)
+
+        self.data_changed.emit()

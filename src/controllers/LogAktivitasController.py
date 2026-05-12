@@ -1,21 +1,18 @@
 # ruff: noqa
 # flake8: noqa
 # mypy: ignore-errors
-import os
 import sqlite3
 from datetime import datetime
 from typing import List, Optional
 
 from src.models.KoefisienEmisi import KoefisienEmisi
 from src.models.LogAktivitas import LogAktivitas
-
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "carbonly.db")
+from src.services.DBContext import DBContext
 
 
 class LogAktivitasController:
     def __init__(self):
         self._logAktivitas: Optional[LogAktivitas] = None
-        self._db_path = os.path.abspath(DB_PATH)
         self._inisialisasiDatabase()
 
     @property
@@ -26,14 +23,8 @@ class LogAktivitasController:
     def logAktivitas(self, value: Optional[LogAktivitas]):
         self._logAktivitas = value
 
-    def _koneksi(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
-
     def _inisialisasiDatabase(self) -> None:
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
             cursor = conn.cursor()
 
             cursor.execute("""
@@ -72,9 +63,6 @@ class LogAktivitasController:
                     default_koefisien,
                 )
 
-            conn.commit()
-        finally:
-            conn.close()
 
     @staticmethod
     def _rowToLog(row: sqlite3.Row) -> LogAktivitas:
@@ -88,8 +76,8 @@ class LogAktivitasController:
         )
 
     def dapatkanDaftarLog(self) -> List[LogAktivitas]:
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
+            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT id, tanggal, kategori, nilai_aktivitas, "
@@ -97,8 +85,6 @@ class LogAktivitasController:
                 "FROM log_aktivitas ORDER BY tanggal DESC"
             )
             return [self._rowToLog(row) for row in cursor.fetchall()]
-        finally:
-            conn.close()
 
     def tambahLog(self, data: LogAktivitas) -> None:
         self._logAktivitas = data
@@ -111,8 +97,7 @@ class LogAktivitasController:
         if koefisien:
             data.hitungEmisi(koefisien)
 
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE log_aktivitas SET "
@@ -128,11 +113,8 @@ class LogAktivitasController:
                     data.id,
                 ),
             )
-            conn.commit()
             self._logAktivitas = data
             return True
-        finally:
-            conn.close()
 
     def simpanLog(self, data: LogAktivitas) -> bool:
         if not data.validasiInput():
@@ -141,8 +123,7 @@ class LogAktivitasController:
         koefisien = KoefisienEmisi.dapatkanBerdasarkanKategori(data.kategori)
         data.hitungEmisi(koefisien)
 
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
             cursor = conn.cursor()
             if data.id is None:
                 cursor.execute(
@@ -173,25 +154,18 @@ class LogAktivitasController:
                         data.id,
                     ),
                 )
-            conn.commit()
             self._logAktivitas = data
             return True
-        finally:
-            conn.close()
 
     def hapusLog(self, id: int) -> None:
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
             conn.execute("DELETE FROM log_aktivitas WHERE id = ?", (id,))
-            conn.commit()
-        finally:
-            conn.close()
 
     def dapatkanLogRentang(
         self, tanggalMulai: datetime, tanggalAkhir: datetime
     ) -> List[LogAktivitas]:
-        conn = self._koneksi()
-        try:
+        with DBContext.connect() as conn:
+            conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT id, tanggal, kategori, nilai_aktivitas, "
@@ -202,5 +176,3 @@ class LogAktivitasController:
                 (tanggalMulai.isoformat(), tanggalAkhir.isoformat()),
             )
             return [self._rowToLog(row) for row in cursor.fetchall()]
-        finally:
-            conn.close()

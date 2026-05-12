@@ -1,11 +1,10 @@
 # ruff: noqa
 # flake8: noqa
 # mypy: ignore-errors
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from typing import Optional, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from src.controllers.RekapitulasiController import RekapitulasiController
+from src.controllers.RekapitulasiController import RekapitulasiController
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QPainter
@@ -35,12 +34,12 @@ class RekapitulasiView(QWidget):
     def __init__(
         self,
         parent=None,
-        controller: Optional["RekapitulasiController"] = None,
+        controller: Optional[RekapitulasiController] = None,
         tanggalMulai: Optional[datetime] = None,
         tanggalAkhir: Optional[datetime] = None,
     ):
         super().__init__(parent=parent)
-        self._controller = controller
+        self._controller = controller if controller is not None else RekapitulasiController()
         self.current_date = datetime.now() if tanggalMulai is None else tanggalMulai
         self.current_mode = "Harian"
         self.initUI()
@@ -134,9 +133,18 @@ class RekapitulasiView(QWidget):
         self.loadData()
 
     def _weekRange(self):
-        start = self.current_date - timedelta(days=self.current_date.weekday())
-        end = start + timedelta(days=6)
+        d = self.current_date.date()
+        start = datetime.combine(d - timedelta(days=d.weekday()), time.min)
+        end = datetime.combine(d + timedelta(days=6 - d.weekday()), time.max)
         return start, end
+
+    @staticmethod
+    def _startOfDay(dt: datetime) -> datetime:
+        return datetime.combine(dt.date(), time.min)
+
+    @staticmethod
+    def _endOfDay(dt: datetime) -> datetime:
+        return datetime.combine(dt.date(), time.max)
 
     def _updateDateLabel(self):
         if self.current_mode == "Harian":
@@ -183,10 +191,10 @@ class RekapitulasiView(QWidget):
         max_val = 0
 
         if self.current_mode == "Harian":
-            week_start, _ = self._weekRange()
+            week_start, week_end = self._weekRange()
             values_by_date = {}
             if self._controller is not None:
-                data = self._controller.dapatkanRekapitulasi(week_start, week_start + timedelta(days=6))
+                data = self._controller.dapatkanRekapitulasi(week_start, week_end)
                 for d, val in data.get("emisi_per_hari", []):
                     values_by_date[d.date()] = val
             for i in range(7):
@@ -197,15 +205,16 @@ class RekapitulasiView(QWidget):
                 if val > max_val:
                     max_val = val
         else:
-            current_week_start = self.current_date - timedelta(days=self.current_date.weekday())
+            d = self.current_date.date()
+            current_week_start = datetime.combine(d - timedelta(days=d.weekday()), time.min)
             num_weeks = 8
             first_week_start = current_week_start - timedelta(weeks=num_weeks - 1)
-            overall_end = current_week_start + timedelta(days=6)
+            overall_end = datetime.combine(d + timedelta(days=6 - d.weekday()), time.max)
             values_by_week = {}
             if self._controller is not None:
                 data = self._controller.dapatkanRekapitulasi(first_week_start, overall_end)
-                for d, val in data.get("emisi_per_hari", []):
-                    wk_start = d - timedelta(days=d.weekday())
+                for d_item, val in data.get("emisi_per_hari", []):
+                    wk_start = d_item - timedelta(days=d_item.weekday())
                     values_by_week[wk_start.date()] = values_by_week.get(wk_start.date(), 0.0) + val
             for i in range(num_weeks):
                 wk_start = first_week_start + timedelta(weeks=i)
@@ -244,7 +253,8 @@ class RekapitulasiView(QWidget):
         if self._controller is not None:
             if self.current_mode == "Harian":
                 data = self._controller.dapatkanRekapitulasi(
-                    self.current_date, self.current_date
+                    self._startOfDay(self.current_date),
+                    self._endOfDay(self.current_date),
                 )
             else:
                 data = self._controller.dapatkanRekapitulasi(week_start, week_end)
@@ -259,3 +269,6 @@ class RekapitulasiView(QWidget):
             self.lbl_card_emisi_value.setStyleSheet("color: red;")
         else:
             self.lbl_card_emisi_value.setStyleSheet("color: green;")
+
+    def refresh(self):
+        self.loadData()

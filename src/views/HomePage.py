@@ -34,6 +34,8 @@ class HomePage(QWidget):
             self._welcome_label.setText(f"Selamat datang, {username}!")
         if self._header is not None:
             self._header.set_username(username)
+        if self._rekap is not None:
+            self._rekap.refresh()
 
     def _setup_ui(self) -> None:
         username = AuthController.get_current_username() or "Pengguna"
@@ -73,6 +75,7 @@ class HomePage(QWidget):
         layout.addWidget(self._rekap)
 
         self._log_aktivitas = LogAktivitasPage(content)
+        self._log_aktivitas.data_changed.connect(self._rekap.refresh)
         self._log_aktivitas._lblJudul.hide()
         self._log_aktivitas._lblSubjudul.hide()
         self._log_aktivitas.layout().setContentsMargins(0, 0, 0, 0)
