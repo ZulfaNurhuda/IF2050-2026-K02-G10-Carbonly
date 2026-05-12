@@ -239,6 +239,7 @@ class RekapitulasiView(QWidget):
 
         total_emisi = 0.0
         target_emisi = 0.0
+        week_start, week_end = self._weekRange()
 
         if self._controller is not None:
             if self.current_mode == "Harian":
