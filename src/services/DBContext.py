@@ -14,7 +14,7 @@ class DBContext:
         try:
             yield conn
             conn.commit()
-        except BaseException:
+        except Exception:
             conn.rollback()
             raise
         finally:
