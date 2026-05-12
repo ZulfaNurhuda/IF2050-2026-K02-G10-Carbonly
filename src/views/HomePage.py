@@ -14,6 +14,7 @@ from qfluentwidgets import (
 )
 
 from src.controllers.AuthController import AuthController
+from src.views.RekapitulasiView import RekapitulasiView
 
 
 class HomePage(QWidget):
@@ -66,26 +67,9 @@ class HomePage(QWidget):
         layout.addWidget(self._welcome_label)
         layout.addWidget(desc)
 
-        cards_row = QHBoxLayout()
-        cards_row.setSpacing(16)
-        for card_title, card_unit in [
-            ("Emisi Hari Ini", "kg CO₂"),
-            ("Target Emisi", "kg CO₂ / hari"),
-            ("Aktivitas Bulan Ini", "log tercatat"),
-        ]:
-            card = CardWidget(content)
-            card_layout = QVBoxLayout(card)
-            card_layout.setContentsMargins(20, 16, 20, 16)
-            card_layout.setSpacing(6)
-            card_layout.addWidget(BodyLabel(card_title, card))
-            value_lbl = TitleLabel("—", card)
-            value_lbl.setStyleSheet(f"color: {themeColor().name()};")
-            card_layout.addWidget(value_lbl)
-            unit_lbl = BodyLabel(card_unit, card)
-            unit_lbl.setStyleSheet("color: gray;")
-            card_layout.addWidget(unit_lbl)
-            cards_row.addWidget(card, 1)
-        layout.addLayout(cards_row)
+        # Rekapitulasi
+        self._rekap = RekapitulasiView(content)
+        layout.addWidget(self._rekap)
 
         layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
 

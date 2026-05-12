@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                             QStackedWidget, QTableWidgetItem, QHeaderView)
+                             QStackedWidget)
 
 from qfluentwidgets import (SegmentedWidget, TransparentToolButton, SubtitleLabel, 
                             CardWidget, TableWidget, BodyLabel, TitleLabel, FluentIcon)
@@ -47,12 +47,8 @@ class RekapitulasiView(QWidget):
     def initUI(self):
         self.setObjectName("RekapitulasiView")
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(24, 24, 24, 24)
-        self.main_layout.setSpacing(16)
-
-        # Title
-        self.title_label = TitleLabel("Rekapitulasi Emisi", self)
-        self.main_layout.addWidget(self.title_label)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(12)
 
         # Toggle Harian/Mingguan
         self.pivot = SegmentedWidget(self)
@@ -106,16 +102,6 @@ class RekapitulasiView(QWidget):
         self.cards_layout.addWidget(self.card_target)
         self.harian_layout.addLayout(self.cards_layout)
 
-        # Table
-        self.lbl_tabel = SubtitleLabel("Log Aktivitas", self)
-        self.harian_layout.addWidget(self.lbl_tabel)
-        
-        self.table_widget = TableWidget(self)
-        self.table_widget.setColumnCount(5)
-        self.table_widget.setHorizontalHeaderLabels(["Kategori", "Aktivitas", "Besaran", "Emisi", "Komentar"])
-        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.harian_layout.addWidget(self.table_widget, 1)
-        
         self.stacked_widget.addWidget(self.harian_widget)
 
         # ---- MINGGUAN VIEW ----
@@ -181,21 +167,6 @@ class RekapitulasiView(QWidget):
                 self.lbl_card_emisi_value.setStyleSheet("color: red;")
             else:
                 self.lbl_card_emisi_value.setStyleSheet("color: green;")
-                
-            # Populate Table
-            self.table_widget.setRowCount(len(logs))
-            for i, log in enumerate(logs):
-                kategori = getattr(log, 'kategori', "-")
-                aktivitas = getattr(log, 'namaAktivitas', "-")
-                besaran = f"{getattr(log, 'nilaiAktivitas', 0)} {getattr(log, 'satuanAktivitas', '')}"
-                emisi = str(getattr(log, 'totalEmisi', 0.0))
-                komentar = getattr(log, 'komentar', "-")
-                
-                self.table_widget.setItem(i, 0, QTableWidgetItem(str(kategori)))
-                self.table_widget.setItem(i, 1, QTableWidgetItem(str(aktivitas)))
-                self.table_widget.setItem(i, 2, QTableWidgetItem(str(besaran)))
-                self.table_widget.setItem(i, 3, QTableWidgetItem(str(emisi)))
-                self.table_widget.setItem(i, 4, QTableWidgetItem(str(komentar)))
                 
         else:
             # Mingguan
