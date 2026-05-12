@@ -1,36 +1,32 @@
+import os
 import sys
 
-from PyQt6.QtGui import QIcon
+from dotenv import load_dotenv
 from PyQt6.QtWidgets import QApplication
-from qfluentwidgets import FluentIcon, MSFluentWindow
 
-from src.pages.example import ExamplePage
-from src.pages.log_aktivitas import LogAktivitasPage
-
-
-class MainWindow(MSFluentWindow):
-    def __init__(self):
-        super().__init__()
-
-        # Halaman contoh
-        self.example_interface = ExamplePage(self)
-        self.addSubInterface(
-            self.example_interface, FluentIcon.HOME, "Example", FluentIcon.HOME_FILL
-        )
-
-        # Halaman Log Aktivitas — tombol "Tambah Log" ada di dalam halaman ini
-        self.log_aktivitas_interface = LogAktivitasPage(self)
-        self.addSubInterface(
-            self.log_aktivitas_interface, FluentIcon.CALORIES, "Log Aktivitas"
-        )
-
-        self.resize(1100, 680)
-        self.setWindowTitle("Carbonly")
-        self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
-
+from src.controllers.AuthController import AuthController
+from src.models.User import User
+from src.windows.MainWindow import MainWindow
 
 if __name__ == "__main__":
+    load_dotenv()
+
+    User.create_table()
+    if os.environ.get("CARBONLY_DEBUG") == "MinimalKasiSpesifikasiYangKonsistenMasMba":
+        print("[WAIT] Seeding Demo User Data... ", end="")
+        User.seed_demo_user()
+        print("[SUCCESS]")
+
     app = QApplication(sys.argv)
     w = MainWindow()
-    w.show()
+    w.showMaximized()
+
+    # Pastikan window sudah ter-layout dengan benar sebelum menampilkan dialog
+    QApplication.processEvents()
+
+    if AuthController.initialize():
+        w.home_interface.refresh()
+    else:
+        w._start_login()
+
     app.exec()

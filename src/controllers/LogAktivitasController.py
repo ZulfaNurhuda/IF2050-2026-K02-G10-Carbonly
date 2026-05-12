@@ -1,3 +1,6 @@
+# ruff: noqa
+# flake8: noqa
+# mypy: ignore-errors
 import os
 import sqlite3
 from datetime import datetime

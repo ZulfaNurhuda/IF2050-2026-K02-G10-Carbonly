@@ -27,7 +27,9 @@ select = [
     "N",   # pep8-naming
     "B",   # flake8-bugbear
 ]
-ignore = []
+ignore = [
+    "N999",  # PascalCase module names are project convention
+]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
