@@ -14,6 +14,7 @@ from qfluentwidgets import (
 )
 
 from src.controllers.AuthController import AuthController
+from src.pages.log_aktivitas import LogAktivitasPage
 from src.views.RekapitulasiView import RekapitulasiView
 
 
@@ -73,18 +74,11 @@ class HomePage(QWidget):
 
         layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
 
-        recent_card = CardWidget(content)
-        recent_layout = QVBoxLayout(recent_card)
-        recent_layout.setContentsMargins(20, 20, 20, 20)
-        placeholder = BodyLabel(
-            "Belum ada aktivitas tercatat.\n"
-            "Buka menu Log Aktivitas untuk mulai mencatat.",
-            recent_card,
-        )
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        placeholder.setStyleSheet("color: gray;")
-        recent_layout.addWidget(placeholder)
-        layout.addWidget(recent_card)
+        self._log_aktivitas = LogAktivitasPage(content)
+        self._log_aktivitas._lblJudul.hide()
+        self._log_aktivitas._lblSubjudul.hide()
+        self._log_aktivitas.layout().setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._log_aktivitas)
 
         layout.addStretch(1)
         scroll.setWidget(content)
