@@ -102,7 +102,6 @@ class RekapitulasiView(QWidget):
         self.main_layout.addLayout(self.cards_layout)
 
         self.chart = QChart()
-        self.chart.setTitle("Grafik Emisi Mingguan")
         self.chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
 
         self.chart_view = QChartView(self.chart)
@@ -170,30 +169,51 @@ class RekapitulasiView(QWidget):
             self.lbl_card_emisi_title.setText("Emisi Minggu ini")
             self.lbl_card_target_title.setText("Target Minggu Ini")
 
-    def _updateChart(self, week_start: datetime, week_end: datetime):
+    def _updateChart(self):
+        self.chart.setTitle(
+            "Grafik Emisi Harian" if self.current_mode == "Harian" else "Grafik Emisi Mingguan"
+        )
         self.chart.removeAllSeries()
         for axis in self.chart.axes():
             self.chart.removeAxis(axis)
 
-        values_by_date = {}
-        if self._controller is not None:
-            data = self._controller.dapatkanRekapitulasi(week_start, week_end)
-            emisi_per_hari = data.get("emisi_per_hari", [])
-            for d, val in emisi_per_hari:
-                values_by_date[d.date()] = val
-
         series = QBarSeries()
-        bar_set = QBarSet("Emisi Harian")
+        bar_set = QBarSet("Emisi")
         categories = []
         max_val = 0
 
-        for i in range(7):
-            day = week_start + timedelta(days=i)
-            val = values_by_date.get(day.date(), 0.0)
-            bar_set.append(val)
-            categories.append(day.strftime("%a"))
-            if val > max_val:
-                max_val = val
+        if self.current_mode == "Harian":
+            week_start, _ = self._weekRange()
+            values_by_date = {}
+            if self._controller is not None:
+                data = self._controller.dapatkanRekapitulasi(week_start, week_start + timedelta(days=6))
+                for d, val in data.get("emisi_per_hari", []):
+                    values_by_date[d.date()] = val
+            for i in range(7):
+                day = week_start + timedelta(days=i)
+                val = values_by_date.get(day.date(), 0.0)
+                bar_set.append(val)
+                categories.append(day.strftime("%a"))
+                if val > max_val:
+                    max_val = val
+        else:
+            current_week_start = self.current_date - timedelta(days=self.current_date.weekday())
+            num_weeks = 8
+            first_week_start = current_week_start - timedelta(weeks=num_weeks - 1)
+            overall_end = current_week_start + timedelta(days=6)
+            values_by_week = {}
+            if self._controller is not None:
+                data = self._controller.dapatkanRekapitulasi(first_week_start, overall_end)
+                for d, val in data.get("emisi_per_hari", []):
+                    wk_start = d - timedelta(days=d.weekday())
+                    values_by_week[wk_start.date()] = values_by_week.get(wk_start.date(), 0.0) + val
+            for i in range(num_weeks):
+                wk_start = first_week_start + timedelta(weeks=i)
+                val = values_by_week.get(wk_start.date(), 0.0)
+                bar_set.append(val)
+                categories.append(wk_start.strftime("%d %b"))
+                if val > max_val:
+                    max_val = val
 
         series.append(bar_set)
         self.chart.addSeries(series)
@@ -215,9 +235,7 @@ class RekapitulasiView(QWidget):
     def loadData(self):
         self._updateDateLabel()
         self._updateCardLabels()
-
-        week_start, week_end = self._weekRange()
-        self._updateChart(week_start, week_end)
+        self._updateChart()
 
         total_emisi = 0.0
         target_emisi = 0.0
