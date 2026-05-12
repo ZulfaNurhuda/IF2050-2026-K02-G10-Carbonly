@@ -4,17 +4,14 @@
 from datetime import datetime
 from typing import Optional
 
-from PyQt6.QtCore import Qt, QDate, pyqtSignal
+from PyQt6.QtCore import Qt, QDate, QTimer, pyqtSignal
+from PyQt6.QtGui import QShowEvent
 from PyQt6.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
     QHBoxLayout,
     QFormLayout,
     QWidget,
-    QSizePolicy,
 )
 from qfluentwidgets import (
-    LineEdit,
     ComboBox,
     PushButton,
     TitleLabel,
@@ -23,8 +20,8 @@ from qfluentwidgets import (
     InfoBarPosition,
     CalendarPicker,
     DoubleSpinBox,
-    CardWidget,
     FluentIcon,
+    MessageBoxBase,
     setFont,
     PrimaryPushButton,
 )
@@ -44,7 +41,7 @@ SATUAN_MAP = {
 KATEGORI_LIST = [f"{k} ({v})" for k, v in SATUAN_MAP.items()]
 
 
-class FormLogAktivitasView(QDialog):
+class FormLogAktivitasView(MessageBoxBase):
     logDisimpan = pyqtSignal()
 
     def __init__(
@@ -59,12 +56,25 @@ class FormLogAktivitasView(QDialog):
 
         self.setObjectName("form-log-aktivitas-dialog")
         self.setWindowTitle("Log Aktivitas Karbon")
-        self.setMinimumWidth(460)
-        self.setModal(True)
+
+        self.yesButton.setVisible(False)
+        self.cancelButton.setVisible(False)
+        self.buttonGroup.setFixedHeight(0)
 
         self._buatWidget()
         self._buatLayout()
         self._hubungkanSinyal()
+
+        self.widget.setMinimumWidth(460)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        super().showEvent(event)
+        if self.parent():
+            QTimer.singleShot(0, self._adjust_geometry)
+
+    def _adjust_geometry(self) -> None:
+        if self.parent() and hasattr(self.parent(), "width"):
+            self.setGeometry(0, 0, self.parent().width(), self.parent().height())
 
     @property
     def controller(self) -> LogAktivitasController:
@@ -109,24 +119,18 @@ class FormLogAktivitasView(QDialog):
         return SATUAN_MAP.get(kategori) if kategori else None
 
     def _buatWidget(self):
-        _white = "color: white;"
-
         self._lblJudul = TitleLabel("Catat Aktivitas Karbon")
         setFont(self._lblJudul, 18)
-        self._lblJudul.setStyleSheet(_white)
 
         self._lblKategori = BodyLabel("Kategori Aktivitas")
-        self._lblKategori.setStyleSheet(_white)
         self._cbKategori = ComboBox()
         self._cbKategori.addItems(KATEGORI_LIST)
 
         self._lblTanggal = BodyLabel("Tanggal")
-        self._lblTanggal.setStyleSheet(_white)
         self._datePicker = CalendarPicker()
         self._datePicker.setDate(QDate.currentDate())
 
         self._lblNilai = BodyLabel("Besaran Aktivitas")
-        self._lblNilai.setStyleSheet(_white)
         self._spinNilai = DoubleSpinBox()
         self._spinNilai.setRange(0.01, 999_999.99)
         self._spinNilai.setDecimals(2)
@@ -151,19 +155,12 @@ class FormLogAktivitasView(QDialog):
         btnLayout.addWidget(self._btnBatal)
         btnLayout.addWidget(self._btnSimpan)
 
-        rootLayout = QVBoxLayout(self)
-        rootLayout.setContentsMargins(32, 28, 32, 24)
-        rootLayout.setSpacing(20)
-        rootLayout.addWidget(self._lblJudul)
-        rootLayout.addLayout(formLayout)
-        rootLayout.addSpacing(8)
-        rootLayout.addLayout(btnLayout)
-
-        self.setStyleSheet("""
-            TitleLabel, BodyLabel {
-                color: white;
-            }
-        """)
+        self.viewLayout.setContentsMargins(32, 28, 32, 24)
+        self.viewLayout.setSpacing(20)
+        self.viewLayout.addWidget(self._lblJudul)
+        self.viewLayout.addLayout(formLayout)
+        self.viewLayout.addSpacing(8)
+        self.viewLayout.addLayout(btnLayout)
 
     def _hubungkanSinyal(self):
         self._btnSimpan.clicked.connect(self.simpanForm)

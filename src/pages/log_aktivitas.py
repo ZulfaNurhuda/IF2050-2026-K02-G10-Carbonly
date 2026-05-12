@@ -135,7 +135,7 @@ class LogAktivitasPage(QWidget):
 
     def _bukaFormTambah(self) -> None:
         """Membuka FormLogAktivitasView sebagai dialog tambah baru."""
-        dialog = FormLogAktivitasView(controller=self._controller, parent=self)
+        dialog = FormLogAktivitasView(controller=self._controller, parent=self.window())
         dialog.logDisimpan.connect(self._muatDaftarLog)
         dialog.exec()
 
@@ -148,7 +148,7 @@ class LogAktivitasPage(QWidget):
         dialog = FormLogAktivitasView(
             controller=self._controller,
             logTerpilih=log,
-            parent=self,
+            parent=self.window(),
         )
         dialog.fillForm(log)
         dialog.logDisimpan.connect(self._muatDaftarLog)
@@ -164,7 +164,7 @@ class LogAktivitasPage(QWidget):
             "Hapus Log",
             f"Yakin ingin menghapus log '{log.kategori}' "
             f"pada {log.tanggal.strftime('%d %b %Y')}?",
-            self,
+            self.window(),
         )
         if dlg.exec():
             self._controller.hapusLog(log.id)
@@ -176,7 +176,7 @@ class LogAktivitasPage(QWidget):
                 isClosable=True,
                 duration=3000,
                 position=InfoBarPosition.TOP,
-                parent=self,
+                parent=self.window(),
             )
 
     # ------------------------------------------------------------------ #
