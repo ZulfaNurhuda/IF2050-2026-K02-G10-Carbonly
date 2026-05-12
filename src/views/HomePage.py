@@ -8,7 +8,6 @@ from qfluentwidgets import (
     FluentIcon,
     PrimaryPushButton,
     SubtitleLabel,
-    TitleLabel,
     setFont,
     themeColor,
 )

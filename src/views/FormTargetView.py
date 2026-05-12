@@ -5,15 +5,18 @@ from datetime import datetime
 from typing import Optional
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QHBoxLayout, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QFormLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     LineEdit,
     MessageBoxBase,
     PrimaryPushButton,
-    StrongBodyLabel,
+    PushButton,
+    TitleLabel,
+    FluentIcon,
     InfoBar,
     InfoBarPosition,
+    setFont,
 )
 
 from src.controllers.TargetEmisiController import TargetEmisiController
@@ -44,12 +47,16 @@ class FormTargetView(MessageBoxBase):
         self._inputSatuan: str = "kg CO\u2082e"
         self._inputTahun: int = datetime.now().year
 
-        self._setup_ui()
+        self._buatWidget()
+        self._buatLayout()
+        self._hubungkanSinyal()
 
         # Hide the default yes/cancel buttons
         self.yesButton.setVisible(False)
         self.cancelButton.setVisible(False)
         self.buttonGroup.setFixedHeight(0)
+
+        self.widget.setMinimumWidth(460)
 
         # Pre-fill with the existing target, if any
         self.tampilkan()
@@ -94,84 +101,54 @@ class FormTargetView(MessageBoxBase):
     # UI setup                                                             #
     # ------------------------------------------------------------------ #
 
-    def _setup_ui(self) -> None:
-        # Title
-        self._title_label = StrongBodyLabel("Ubah Target Emisi Harian", self)
-        self._title_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    def _buatWidget(self) -> None:
+        self._lblJudul = TitleLabel("Ubah Target Emisi Harian")
+        setFont(self._lblJudul, 18)
 
-        # Input row: [LineEdit] [kg CO₂e label]
-        self._input_row = QWidget(self)
-        row_layout = QHBoxLayout(self._input_row)
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(8)
+        self._lblNilaiTarget = BodyLabel("Nilai Target")
 
-        self._nilai_input = LineEdit(self)
+        self._nilai_input = LineEdit()
         self._nilai_input.setPlaceholderText("Contoh: 8.5")
         self._nilai_input.setFixedHeight(40)
-        self._nilai_input.setFixedWidth(220)
 
-        self._satuan_label = BodyLabel(self._inputSatuan, self)
+        self._satuan_label = BodyLabel(self._inputSatuan)
         self._satuan_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        row_layout.addWidget(self._nilai_input)
-        row_layout.addWidget(self._satuan_label)
-        row_layout.addStretch()
+        self._btnSimpan = PrimaryPushButton(FluentIcon.SAVE, "Simpan")
+        self._btnBatal = PushButton(FluentIcon.CLOSE, "Batal")
+        self._btnSimpan.setFixedWidth(120)
+        self._btnBatal.setFixedWidth(120)
 
-        # Informational note
-        self._info_label = BodyLabel(
-            "Target berlaku secara global kepada seluruh riwayat.", self
-        )
-        self._info_label.setStyleSheet("color: #007f7f;")
-        self._info_label.setWordWrap(True)
+    def _buatLayout(self) -> None:
+        # Input row: [LineEdit] [kg CO₂e label]
+        input_row = QWidget()
+        input_layout = QHBoxLayout(input_row)
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.setSpacing(8)
+        input_layout.addWidget(self._nilai_input)
+        input_layout.addWidget(self._satuan_label)
 
-        # Error label (hidden by default)
-        self._error_label = StrongBodyLabel("", self)
-        self._error_label.setStyleSheet("color: red;")
-        self._error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._error_label.setVisible(False)
+        formLayout = QFormLayout()
+        formLayout.setSpacing(14)
+        formLayout.setContentsMargins(0, 0, 0, 0)
+        formLayout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        formLayout.addRow(self._lblNilaiTarget, input_row)
 
-        # Action buttons
-        self._btn_row = QWidget(self)
-        btn_layout = QHBoxLayout(self._btn_row)
-        btn_layout.setContentsMargins(0, 8, 0, 0)
-        btn_layout.setSpacing(8)
-        btn_layout.addStretch()
+        btnLayout = QHBoxLayout()
+        btnLayout.addStretch()
+        btnLayout.addWidget(self._btnBatal)
+        btnLayout.addWidget(self._btnSimpan)
 
-        self._batal_btn = LineEdit(self)   # placeholder – replaced below
-        # Use a plain PushButton for Batal and PrimaryPushButton for Simpan
-        from PyQt6.QtWidgets import QPushButton
-        self._batal_btn = QPushButton("Batal", self)
-        self._batal_btn.setFixedHeight(36)
-        self._batal_btn.setMinimumWidth(80)
-        self._batal_btn.setStyleSheet("""
-            QPushButton {
-                border: 1px solid #cccccc;
-                border-radius: 5px;
-                background: transparent;
-                font-size: 14px;
-            }
-            QPushButton:hover { background: rgba(0,0,0,0.05); }
-        """)
-        self._batal_btn.clicked.connect(self.reject)
-
-        self._simpan_btn = PrimaryPushButton("Simpan", self)
-        self._simpan_btn.setFixedHeight(36)
-        self._simpan_btn.setMinimumWidth(80)
-        self._simpan_btn.clicked.connect(self.simpanForm)
-
-        btn_layout.addWidget(self._batal_btn)
-        btn_layout.addWidget(self._simpan_btn)
-
-        # Assemble into viewLayout
-        self.viewLayout.addWidget(self._title_label)
+        self.viewLayout.setContentsMargins(32, 28, 32, 24)
+        self.viewLayout.setSpacing(20)
+        self.viewLayout.addWidget(self._lblJudul)
+        self.viewLayout.addLayout(formLayout)
         self.viewLayout.addSpacing(8)
-        self.viewLayout.addWidget(self._input_row)
-        self.viewLayout.addWidget(self._info_label)
-        self.viewLayout.addSpacing(4)
-        self.viewLayout.addWidget(self._error_label)
-        self.viewLayout.addWidget(self._btn_row)
+        self.viewLayout.addLayout(btnLayout)
 
-        self.widget.setMinimumWidth(360)
+    def _hubungkanSinyal(self) -> None:
+        self._btnSimpan.clicked.connect(self.simpanForm)
+        self._btnBatal.clicked.connect(self.reject)
 
     # ------------------------------------------------------------------ #
     # Public interface (matches DPPL spec + stub)                          #
@@ -207,7 +184,7 @@ class FormTargetView(MessageBoxBase):
         if nilai <= 0:
             self.tampilkanError("Nilai target harus lebih dari 0.")
             return
-        
+
         if nilai < 0.1 and nilai != 0:
             self.tampilkanError("Nilai target terlalu rendah. Pastikan nilainya realistis.")
             return
@@ -229,12 +206,27 @@ class FormTargetView(MessageBoxBase):
             self.tampilkanError(pesan)
 
     def tampilkanError(self, pesan: str) -> None:
-        """Show an inline error message."""
-        self._error_label.setText(pesan)
-        self._error_label.setVisible(True)
+        """Show an error InfoBar at the top of the dialog."""
+        InfoBar.error(
+            title="Gagal Menyimpan",
+            content=pesan,
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=4000,
+            position=InfoBarPosition.TOP,
+            parent=self,
+        )
 
     def tampilkanSukses(self) -> None:
         """Notify success, emit signal, and close the dialog."""
-        self._error_label.setVisible(False)
+        InfoBar.success(
+            title="Berhasil Disimpan",
+            content="Target emisi harian berhasil disimpan.",
+            orient=Qt.Orientation.Horizontal,
+            isClosable=True,
+            duration=3000,
+            position=InfoBarPosition.TOP,
+            parent=self.parent(),
+        )
         self.target_disimpan.emit()
         self.accept()

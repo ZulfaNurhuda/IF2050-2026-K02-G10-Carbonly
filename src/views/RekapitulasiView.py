@@ -5,6 +5,7 @@ from datetime import datetime, time, timedelta
 from typing import Optional, TYPE_CHECKING
 
 from src.controllers.RekapitulasiController import RekapitulasiController
+from src.views.FormTargetView import FormTargetView
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QPainter
@@ -83,6 +84,7 @@ class RekapitulasiView(QWidget):
 
         self.cards_layout = QHBoxLayout()
         self.card_emisi = CardWidget(self)
+        self.card_emisi.setFixedHeight(100)
         self.card_emisi_layout = QVBoxLayout(self.card_emisi)
         self.lbl_card_emisi_title = BodyLabel("Emisi Hari Ini", self)
         self.lbl_card_emisi_value = TitleLabel("0 kg CO2e", self)
@@ -90,14 +92,30 @@ class RekapitulasiView(QWidget):
         self.card_emisi_layout.addWidget(self.lbl_card_emisi_value)
 
         self.card_target = CardWidget(self)
+        self.card_target.setFixedHeight(100)
         self.card_target_layout = QVBoxLayout(self.card_target)
+
+        target_title_row = QWidget(self)
+        target_title_layout = QHBoxLayout(target_title_row)
+        target_title_layout.setContentsMargins(0, 0, 0, 0)
+        target_title_layout.setSpacing(4)
+
         self.lbl_card_target_title = BodyLabel("Target Harian", self)
+        target_title_layout.addWidget(self.lbl_card_target_title)
+        target_title_layout.addStretch()
+
+        self._btn_edit_target = TransparentToolButton(FluentIcon.EDIT, self)
+        self._btn_edit_target.setFixedSize(24, 24)
+        self._btn_edit_target.setToolTip("Ubah Target")
+        self._btn_edit_target.clicked.connect(self._on_edit_target_clicked)
+        target_title_layout.addWidget(self._btn_edit_target)
+
         self.lbl_card_target_value = TitleLabel("0 kg CO2e", self)
-        self.card_target_layout.addWidget(self.lbl_card_target_title)
+        self.card_target_layout.addWidget(target_title_row)
         self.card_target_layout.addWidget(self.lbl_card_target_value)
 
-        self.cards_layout.addWidget(self.card_emisi)
-        self.cards_layout.addWidget(self.card_target)
+        self.cards_layout.addWidget(self.card_emisi, stretch=1)
+        self.cards_layout.addWidget(self.card_target, stretch=1)
         self.main_layout.addLayout(self.cards_layout)
 
         self.chart = QChart()
@@ -269,6 +287,11 @@ class RekapitulasiView(QWidget):
             self.lbl_card_emisi_value.setStyleSheet("color: red;")
         else:
             self.lbl_card_emisi_value.setStyleSheet("color: green;")
+
+    def _on_edit_target_clicked(self):
+        modal = FormTargetView(self.window())
+        modal.target_disimpan.connect(self.refresh)
+        modal.exec()
 
     def refresh(self):
         self.loadData()

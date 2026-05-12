@@ -4,6 +4,7 @@
 from datetime import datetime
 from typing import List, TYPE_CHECKING
 from src.controllers.LogAktivitasController import LogAktivitasController
+from src.controllers.TargetEmisiController import TargetEmisiController
 
 if TYPE_CHECKING:
     from src.models.LogAktivitas import LogAktivitas
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 class RekapitulasiController:
     def __init__(self):
         self._logAktivitasController = LogAktivitasController()
-        self._targetEmisiController = None
+        self._targetEmisiController = TargetEmisiController()
 
     @property
     def logAktivitasController(self):

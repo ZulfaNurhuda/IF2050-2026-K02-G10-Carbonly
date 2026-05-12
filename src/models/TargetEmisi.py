@@ -131,9 +131,9 @@ class TargetEmisi:
         """Overwrite an existing target row identified by id."""
         with DBContext.connect() as conn:
             conn.execute(
-                "UPDATE target_emisi SET nilai_target = ?, satuan = ? "
+                "UPDATE target_emisi SET nilai_target = ?, satuan = ?, tahun = ? "
                 "WHERE id = ?",
-                (target.nilaiTarget, target.satuan, target.id),
+                (target.nilaiTarget, target.satuan, target.tahun, target.id),
             )
 
     @staticmethod

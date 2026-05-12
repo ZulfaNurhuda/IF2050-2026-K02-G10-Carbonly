@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from PyQt6.QtWidgets import QApplication
 
 from src.controllers.AuthController import AuthController
+from src.models.TargetEmisi import TargetEmisi
 from src.models.User import User
 from src.windows.MainWindow import MainWindow
 
@@ -12,6 +13,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     User.create_table()
+    TargetEmisi.create_table()
     if os.environ.get("CARBONLY_DEBUG") == "MinimalKasiSpesifikasiYangKonsistenMasMba":
         print("[WAIT] Seeding Demo User Data... ", end="")
         User.seed_demo_user()
