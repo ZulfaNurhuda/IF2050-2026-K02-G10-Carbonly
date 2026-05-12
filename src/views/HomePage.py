@@ -72,12 +72,17 @@ class HomePage(QWidget):
         self._rekap = RekapitulasiView(content)
         layout.addWidget(self._rekap)
 
-        layout.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
-
         self._log_aktivitas = LogAktivitasPage(content)
         self._log_aktivitas._lblJudul.hide()
         self._log_aktivitas._lblSubjudul.hide()
         self._log_aktivitas.layout().setContentsMargins(0, 0, 0, 0)
+        self._log_aktivitas._tabel.setMinimumHeight(300)
+
+        log_header = QHBoxLayout()
+        log_header.addWidget(SubtitleLabel("Aktivitas Terbaru", content))
+        log_header.addStretch()
+        log_header.addWidget(self._log_aktivitas._btnTambah)
+        layout.addLayout(log_header)
         layout.addWidget(self._log_aktivitas)
 
         layout.addStretch(1)
