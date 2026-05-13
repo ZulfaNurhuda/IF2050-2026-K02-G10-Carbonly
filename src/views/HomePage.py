@@ -437,7 +437,7 @@ class HomePage(QWidget):
             modal.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()  # type: ignore[attr-defined]
+                win.titleBar.raise_()
 
     class _ActivityLogSection(QWidget):
         data_changed = pyqtSignal()
@@ -565,7 +565,7 @@ class HomePage(QWidget):
             dialog.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()  # type: ignore[attr-defined]
+                win.titleBar.raise_()
 
         def _on_edit_clicked(self) -> None:
             log = self._get_selected_log()
@@ -576,7 +576,7 @@ class HomePage(QWidget):
             dialog.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()  # type: ignore[attr-defined]
+                win.titleBar.raise_()
 
         def _on_delete_clicked(self) -> None:
             log = self._get_selected_log()
@@ -592,7 +592,7 @@ class HomePage(QWidget):
             dlg.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()  # type: ignore[attr-defined]
+                win.titleBar.raise_()
 
         def _execute_delete(self, log: ActivityLog) -> None:
             ActivityLogController.delete_log(log.id or 0)
