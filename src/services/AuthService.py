@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 from pathlib import Path
 from typing import Optional
 
@@ -8,6 +9,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from src.models.User import User
+
+logger = logging.getLogger(__name__)
 
 _APP_IDENTITY = b"carbonly-dekstop-app"
 _KDF_SALT = b"carbonly-kdf-salt-v1"
@@ -46,8 +49,8 @@ class AuthService:
         try:
             payload = json.dumps({"user_id": user.id}).encode()
             AuthService._SESSION_PATH.write_bytes(_get_fernet().encrypt(payload))
-        except Exception:  # nosec: B110
-            pass
+        except (OSError, PermissionError) as e:
+            logger.warning("Failed to save session: %s", e)
 
     @staticmethod
     def load_session() -> Optional[User]:
