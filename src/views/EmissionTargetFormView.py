@@ -4,17 +4,15 @@ from typing import Optional
 from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QShowEvent
-from PyQt6.QtWidgets import QFormLayout, QHBoxLayout, QPushButton, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 from qfluentwidgets import (
     BodyLabel,
     FluentIcon,
     LineEdit,
     MessageBoxBase,
     PrimaryPushButton,
-    PushButton,
     StrongBodyLabel,
-    TitleLabel,
-    setFont,
+    SubtitleLabel,
 )
 
 from src.controllers.EmissionTargetController import EmissionTargetController
@@ -26,7 +24,7 @@ class EmissionTargetFormView(MessageBoxBase):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Target Emisi Harian")
+        self.setWindowTitle("Ubah Target Emisi Harian")
 
         self._unit: str = "kg CO₂e"
         self._year: int = datetime.now().year
@@ -40,7 +38,7 @@ class EmissionTargetFormView(MessageBoxBase):
         self._setup_layout()
         self._connect_signals()
 
-        self.widget.setMinimumWidth(460)
+        self.widget.setMinimumWidth(400)
         self._prefill_from_db()
 
     def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
@@ -77,57 +75,45 @@ class EmissionTargetFormView(MessageBoxBase):
         self.viewLayout.insertLayout(0, row)
 
     def _setup_widgets(self) -> None:
-        self._lbl_title = TitleLabel("Ubah Target Emisi Harian")
-        setFont(self._lbl_title, 18)
+        self.viewLayout.addWidget(SubtitleLabel("Ubah Target Emisi Harian", self))
 
-        self._lbl_value = BodyLabel("Nilai Target")
+        self._lbl_value = StrongBodyLabel("Nilai Target", self)
 
-        self._value_input = LineEdit()
+        self._value_input = LineEdit(self)
         self._value_input.setPlaceholderText("Contoh: 8.5")
         self._value_input.setFixedHeight(40)
 
-        self._unit_label = BodyLabel(self._unit)
+        self._unit_label = BodyLabel(self._unit, self)
         self._unit_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self._msg_label = StrongBodyLabel("", self)
         self._msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._msg_label.setVisible(False)
 
-        self._btn_save = PrimaryPushButton(FluentIcon.SAVE, "Simpan")
-        self._btn_cancel = PushButton(FluentIcon.CLOSE, "Batal")
-        self._btn_save.setFixedWidth(120)
-        self._btn_cancel.setFixedWidth(120)
+        self._btn_save = PrimaryPushButton("Simpan", self)
+        self._btn_save.setFixedHeight(40)
+        self._btn_save.setMinimumWidth(300)
 
     def _setup_layout(self) -> None:
-        input_row_widget = QWidget()
-        input_row = QHBoxLayout(input_row_widget)
+        input_row = QHBoxLayout()
         input_row.setContentsMargins(0, 0, 0, 0)
         input_row.setSpacing(8)
         input_row.addWidget(self._value_input)
         input_row.addWidget(self._unit_label)
 
-        form_layout = QFormLayout()
-        form_layout.setSpacing(14)
-        form_layout.setContentsMargins(0, 0, 0, 0)
-        form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        form_layout.addRow(self._lbl_value, input_row_widget)
-
         btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        btn_row.addWidget(self._btn_cancel)
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setSpacing(8)
         btn_row.addWidget(self._btn_save)
+        btn_row.addStretch(1)
 
-        self.viewLayout.setContentsMargins(32, 28, 32, 24)
-        self.viewLayout.setSpacing(20)
-        self.viewLayout.addWidget(self._lbl_title)
-        self.viewLayout.addLayout(form_layout)
+        self.viewLayout.addWidget(self._lbl_value)
+        self.viewLayout.addLayout(input_row)
         self.viewLayout.addWidget(self._msg_label)
-        self.viewLayout.addSpacing(4)
         self.viewLayout.addLayout(btn_row)
 
     def _connect_signals(self) -> None:
         self._btn_save.clicked.connect(self._on_save_clicked)
-        self._btn_cancel.clicked.connect(self.reject)
         self._value_input.returnPressed.connect(self._on_save_clicked)
 
     def _prefill_from_db(self) -> None:

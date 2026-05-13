@@ -4,19 +4,16 @@ from typing import Optional
 from PyQt6 import QtCore
 from PyQt6.QtCore import QDate, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QShowEvent
-from PyQt6.QtWidgets import QFormLayout, QHBoxLayout, QPushButton, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 from qfluentwidgets import (
-    BodyLabel,
     CalendarPicker,
     ComboBox,
     DoubleSpinBox,
     FluentIcon,
     MessageBoxBase,
     PrimaryPushButton,
-    PushButton,
     StrongBodyLabel,
-    TitleLabel,
-    setFont,
+    SubtitleLabel,
 )
 
 from src.controllers.ActivityLogController import ActivityLogController
@@ -45,7 +42,11 @@ class ActivityLogFormView(MessageBoxBase):
         self._selected_log = selected_log
 
         self.setObjectName("activity-log-form-dialog")
-        self.setWindowTitle("Log Aktivitas Karbon")
+        self.setWindowTitle(
+            "Edit Aktivitas Karbon"
+            if selected_log is not None
+            else "Catat Aktivitas Karbon"
+        )
 
         self.yesButton.setVisible(False)
         self.cancelButton.setVisible(False)
@@ -59,7 +60,7 @@ class ActivityLogFormView(MessageBoxBase):
         if selected_log is not None:
             self.fill_form(selected_log)
 
-        self.widget.setMinimumWidth(460)
+        self.widget.setMinimumWidth(400)
 
     def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
         super().showEvent(event)
@@ -95,57 +96,51 @@ class ActivityLogFormView(MessageBoxBase):
         self.viewLayout.insertLayout(0, row)
 
     def _setup_widgets(self) -> None:
-        self._lbl_title = TitleLabel("Catat Aktivitas Karbon")
-        setFont(self._lbl_title, 18)
+        self.viewLayout.addWidget(SubtitleLabel(self.windowTitle(), self))
 
-        self._lbl_category = BodyLabel("Kategori Aktivitas")
-        self._cb_category = ComboBox()
+        self._lbl_category = StrongBodyLabel("Kategori Aktivitas", self)
+        self._cb_category = ComboBox(self)
         self._cb_category.addItems(CATEGORY_LIST)
+        self._cb_category.setFixedHeight(40)
 
-        self._lbl_date = BodyLabel("Tanggal")
-        self._date_picker = CalendarPicker()
+        self._lbl_date = StrongBodyLabel("Tanggal", self)
+        self._date_picker = CalendarPicker(self)
         self._date_picker.setDate(QDate.currentDate())
+        self._date_picker.setFixedHeight(40)
 
-        self._lbl_value = BodyLabel("Besaran Aktivitas")
-        self._spin_value = DoubleSpinBox()
+        self._lbl_value = StrongBodyLabel("Besaran Aktivitas", self)
+        self._spin_value = DoubleSpinBox(self)
         self._spin_value.setRange(0.01, 999_999.99)
         self._spin_value.setDecimals(2)
         self._spin_value.setSingleStep(1.0)
+        self._spin_value.setFixedHeight(40)
 
         self._msg_label = StrongBodyLabel("", self)
         self._msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._msg_label.setVisible(False)
 
-        self._btn_save = PrimaryPushButton(FluentIcon.SAVE, "Simpan")
-        self._btn_cancel = PushButton(FluentIcon.CLOSE, "Batal")
-        self._btn_save.setFixedWidth(120)
-        self._btn_cancel.setFixedWidth(120)
+        self._btn_save = PrimaryPushButton("Simpan", self)
+        self._btn_save.setFixedHeight(40)
+        self._btn_save.setMinimumWidth(300)
 
     def _setup_layout(self) -> None:
-        form_layout = QFormLayout()
-        form_layout.setSpacing(14)
-        form_layout.setContentsMargins(0, 0, 0, 0)
-        form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        form_layout.addRow(self._lbl_category, self._cb_category)
-        form_layout.addRow(self._lbl_date, self._date_picker)
-        form_layout.addRow(self._lbl_value, self._spin_value)
-
         btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        btn_row.addWidget(self._btn_cancel)
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setSpacing(8)
         btn_row.addWidget(self._btn_save)
+        btn_row.addStretch(1)
 
-        self.viewLayout.setContentsMargins(32, 28, 32, 24)
-        self.viewLayout.setSpacing(20)
-        self.viewLayout.addWidget(self._lbl_title)
-        self.viewLayout.addLayout(form_layout)
+        self.viewLayout.addWidget(self._lbl_category)
+        self.viewLayout.addWidget(self._cb_category)
+        self.viewLayout.addWidget(self._lbl_date)
+        self.viewLayout.addWidget(self._date_picker)
+        self.viewLayout.addWidget(self._lbl_value)
+        self.viewLayout.addWidget(self._spin_value)
         self.viewLayout.addWidget(self._msg_label)
-        self.viewLayout.addSpacing(4)
         self.viewLayout.addLayout(btn_row)
 
     def _connect_signals(self) -> None:
         self._btn_save.clicked.connect(self._on_save_clicked)
-        self._btn_cancel.clicked.connect(self.reject)
 
     @staticmethod
     def _parse_category(display_text: str) -> str:
@@ -175,7 +170,7 @@ class ActivityLogFormView(MessageBoxBase):
 
     def fill_form(self, log_data: ActivityLog) -> None:
         self._selected_log = log_data
-        self._lbl_title.setText("Edit Aktivitas Karbon")
+        self.setWindowTitle("Edit Aktivitas Karbon")
 
         display_text = f"{log_data.category or ''} ({log_data.activity_unit or ''})"
         idx = self._cb_category.findText(display_text)
@@ -192,7 +187,7 @@ class ActivityLogFormView(MessageBoxBase):
         self._cb_category.setCurrentIndex(0)
         self._date_picker.setDate(QDate.currentDate())
         self._spin_value.setValue(0.0)
-        self._lbl_title.setText("Catat Aktivitas Karbon")
+        self.setWindowTitle("Catat Aktivitas Karbon")
 
     def _on_save_clicked(self) -> None:
         data = ActivityLog(
