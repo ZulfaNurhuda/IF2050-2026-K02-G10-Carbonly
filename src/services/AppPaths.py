@@ -8,7 +8,7 @@ _APP_AUTHOR = "Carbonly"
 
 
 def app_data_dir() -> Path:
-    path = Path(user_data_dir(_APP_NAME, _APP_AUTHOR))
+    path = Path(user_data_dir(_APP_NAME, _APP_AUTHOR, roaming=True))
     path.mkdir(parents=True, exist_ok=True)
     return path
 
