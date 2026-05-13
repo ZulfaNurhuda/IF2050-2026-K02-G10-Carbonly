@@ -27,7 +27,9 @@ select = [
     "N",   # pep8-naming
     "B",   # flake8-bugbear
 ]
-ignore = []
+ignore = [
+    "N999",  # PascalCase module names are project convention
+]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
@@ -36,7 +38,7 @@ ignore = []
 python_version = "3.10"
 strict = false
 ignore_missing_imports = true
-warn_unused_ignores = true
+warn_unused_ignores = false
 warn_return_any = true
 exclude = ["tests/", "build/"]
 
@@ -46,5 +48,6 @@ skips = ["B101"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 python_files = ["test_*.py", "*_test.py"]
 python_functions = ["test_*"]

@@ -1,11 +1,13 @@
-from .DaftarLogAktivitasView import DaftarLogAktivitasView
-from .FormLogAktivitasView import FormLogAktivitasView
-from .FormTargetView import FormTargetView
-from .RekapitulasiView import RekapitulasiView
+from .ActivityLogFormView import ActivityLogFormView
+from .EmissionTargetFormView import EmissionTargetFormView
+from .HomePage import HomePage
+from .LoginView import LoginView
+from .ProfileView import ProfileView
 
 __all__ = [
-    "FormLogAktivitasView",
-    "DaftarLogAktivitasView",
-    "RekapitulasiView",
-    "FormTargetView",
+    "ActivityLogFormView",
+    "EmissionTargetFormView",
+    "HomePage",
+    "LoginView",
+    "ProfileView",
 ]

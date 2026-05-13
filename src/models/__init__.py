@@ -1,6 +1,13 @@
-from .KategoriAktivitas import KategoriAktivitas
-from .KoefisienEmisi import KoefisienEmisi
-from .LogAktivitas import LogAktivitas
-from .TargetEmisi import TargetEmisi
+from .ActivityCategory import ActivityCategory
+from .ActivityLog import ActivityLog
+from .EmissionCoefficient import EmissionCoefficient
+from .EmissionTarget import EmissionTarget
+from .User import User
 
-__all__ = ["LogAktivitas", "KategoriAktivitas", "KoefisienEmisi", "TargetEmisi"]
+__all__ = [
+    "ActivityCategory",
+    "ActivityLog",
+    "EmissionCoefficient",
+    "EmissionTarget",
+    "User",
+]
