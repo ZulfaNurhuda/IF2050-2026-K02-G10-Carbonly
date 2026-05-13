@@ -40,6 +40,7 @@ if __name__ == "__main__":
 
     qInstallMessageHandler(_qt_msg_handler)
     app = QApplication(sys.argv)
+    app.setDesktopFileName("Carbonly")
     app.setWindowIcon(QIcon(resource_path("assets/ico/favicon.ico")))
     w = MainWindow()
     w.showMaximized()
