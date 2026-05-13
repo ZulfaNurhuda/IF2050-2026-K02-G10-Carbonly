@@ -130,6 +130,7 @@ class HomePage(QWidget):
             title.setStyleSheet(f"color: {themeColor().name()};")
 
             from qfluentwidgets import CaptionLabel
+
             tagline = CaptionLabel("Personal Carbon Footprint Tracker", self)
             tagline.setStyleSheet("color: gray;")
 
@@ -318,8 +319,7 @@ class HomePage(QWidget):
                 week_start, week_end = self._get_week_range()
                 summary: Dict = SummaryController.get_summary(week_start, week_end)
                 values_by_date: Dict = {
-                    d.date(): val
-                    for d, val in summary.get("daily_emissions", [])
+                    d.date(): val for d, val in summary.get("daily_emissions", [])
                 }
                 for i in range(7):
                     day = week_start + timedelta(days=i)
@@ -399,7 +399,9 @@ class HomePage(QWidget):
             modal = EmissionTargetFormView(self.window())
             modal.target_saved.connect(self.refresh)
             modal.open()
-            self.window().titleBar.raise_()
+            win = self.window()
+            if win:
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
     class _ActivityLogSection(QWidget):
         data_changed = pyqtSignal()
@@ -421,8 +423,14 @@ class HomePage(QWidget):
             self._table = TableWidget(self)
             self._table.setColumnCount(6)
             self._table.setHorizontalHeaderLabels(
-                ["ID", "Tanggal", "Kategori", "Besaran", "Satuan",
-                 "Total Emisi (kg CO2e)"]
+                [
+                    "ID",
+                    "Tanggal",
+                    "Kategori",
+                    "Besaran",
+                    "Satuan",
+                    "Total Emisi (kg CO2e)",
+                ]
             )
             self._table.horizontalHeader().setSectionResizeMode(
                 QHeaderView.ResizeMode.Stretch
@@ -476,7 +484,9 @@ class HomePage(QWidget):
             dialog = ActivityLogFormView(parent=self.window())
             dialog.log_saved.connect(self._load_logs)
             dialog.open()
-            self.window().titleBar.raise_()
+            win = self.window()
+            if win:
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
         def _on_edit_clicked(self) -> None:
             log = self._get_selected_log()
@@ -485,7 +495,9 @@ class HomePage(QWidget):
             dialog = ActivityLogFormView(selected_log=log, parent=self.window())
             dialog.log_saved.connect(self._load_logs)
             dialog.open()
-            self.window().titleBar.raise_()
+            win = self.window()
+            if win:
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
         def _on_delete_clicked(self) -> None:
             log = self._get_selected_log()
@@ -517,7 +529,7 @@ class HomePage(QWidget):
             id_item = self._table.item(row, 0)
             if id_item is None:
                 return None
-            return id_item.data(Qt.ItemDataRole.UserRole)  # type: ignore[return-value]
+            return id_item.data(Qt.ItemDataRole.UserRole)  # type: ignore[no-any-return]
 
         def _load_logs(self) -> None:
             logs: List[ActivityLog] = ActivityLogController.get_all_logs()
