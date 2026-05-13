@@ -398,7 +398,8 @@ class HomePage(QWidget):
         def _on_edit_target_clicked(self) -> None:
             modal = EmissionTargetFormView(self.window())
             modal.target_saved.connect(self.refresh)
-            modal.exec()
+            modal.open()
+            self.window().titleBar.raise_()
 
     class _ActivityLogSection(QWidget):
         data_changed = pyqtSignal()
@@ -474,7 +475,8 @@ class HomePage(QWidget):
         def _on_add_clicked(self) -> None:
             dialog = ActivityLogFormView(parent=self.window())
             dialog.log_saved.connect(self._load_logs)
-            dialog.exec()
+            dialog.open()
+            self.window().titleBar.raise_()
 
         def _on_edit_clicked(self) -> None:
             log = self._get_selected_log()
@@ -482,7 +484,8 @@ class HomePage(QWidget):
                 return
             dialog = ActivityLogFormView(selected_log=log, parent=self.window())
             dialog.log_saved.connect(self._load_logs)
-            dialog.exec()
+            dialog.open()
+            self.window().titleBar.raise_()
 
         def _on_delete_clicked(self) -> None:
             log = self._get_selected_log()
