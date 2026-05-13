@@ -7,6 +7,13 @@ from PyQt6.QtCore import QtMsgType, qInstallMessageHandler
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 
+from src.controllers.ActivityLogController import ActivityLogController
+from src.controllers.AuthController import AuthController
+from src.models.EmissionTarget import EmissionTarget
+from src.models.User import User
+from src.services.AppPaths import resource_path
+from src.windows.MainWindow import MainWindow
+
 if sys.platform == "win32":
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("carbonly.app")
 
@@ -18,12 +25,6 @@ def _qt_msg_handler(msg_type, context, msg):
         return
     if msg_type not in (QtMsgType.QtDebugMsg, QtMsgType.QtInfoMsg):
         print(f"[Qt] {msg}", file=sys.stderr)
-
-from src.controllers.ActivityLogController import ActivityLogController
-from src.controllers.AuthController import AuthController
-from src.models.EmissionTarget import EmissionTarget
-from src.models.User import User
-from src.windows.MainWindow import MainWindow
 
 if __name__ == "__main__":
     load_dotenv()
@@ -39,7 +40,7 @@ if __name__ == "__main__":
 
     qInstallMessageHandler(_qt_msg_handler)
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("favicon.ico"))
+    app.setWindowIcon(QIcon(resource_path("assets/ico/favicon.ico")))
     w = MainWindow()
     w.showMaximized()
 

@@ -5,6 +5,7 @@ from qfluentwidgets import Action, FluentIcon, MSFluentWindow, RoundMenu
 from qfluentwidgets.components.widgets.menu import MenuAnimationType
 
 from src.controllers.AuthController import AuthController
+from src.services.AppPaths import resource_path
 from src.views.HomePage import HomePage
 from src.views.LoginView import LoginView
 from src.views.ProfileView import ProfileView
@@ -20,7 +21,7 @@ class MainWindow(MSFluentWindow):
         self.home_interface.profile_requested.connect(self._show_user_menu)
         self.setMinimumSize(1100, 700)
         self.setWindowTitle("Carbonly")
-        self.setWindowIcon(QIcon("favicon.ico"))
+        self.setWindowIcon(QIcon(resource_path("assets/ico/favicon.ico")))
 
     def _start_login(self) -> None:
         login_view = LoginView(self)

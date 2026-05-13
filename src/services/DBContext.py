@@ -1,11 +1,12 @@
 import sqlite3
 from collections.abc import Generator
 from contextlib import contextmanager
-from pathlib import Path
+
+from src.services.AppPaths import app_data_dir
 
 
 class DBContext:
-    _DB_PATH: str = str(Path(__file__).resolve().parent.parent.parent / "carbonly.db")
+    _DB_PATH: str = str(app_data_dir() / "carbonly.db")
 
     @staticmethod
     @contextmanager

@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            main-exe: Carbonly.exe
+            asset-glob: dist/velopack/*.exe
+          - os: macos-latest
+            main-exe: Carbonly
+            asset-glob: dist/velopack/*.pkg
+          - os: ubuntu-latest
+            main-exe: Carbonly
+            asset-glob: dist/velopack/*.AppImage
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Install FUSE (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y fuse libfuse2
+
+      - name: Build with PyInstaller
+        run: pyinstaller carbonly.spec --clean --noconfirm
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Get version from tag
+        id: version
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Pack with Velopack
+        shell: bash
+        run: |
+          ICON_FLAG=""
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            ICON_FLAG="--icon assets/ico/favicon.ico"
+          fi
+          vpk pack \
+            --packId Carbonly \
+            --packVersion ${{ steps.version.outputs.VERSION }} \
+            --packDir dist/Carbonly \
+            --mainExe ${{ matrix.main-exe }} \
+            --packTitle "Carbonly" \
+            --outputDir dist/velopack \
+            $ICON_FLAG
+
+      - name: Upload installer to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset-glob }}

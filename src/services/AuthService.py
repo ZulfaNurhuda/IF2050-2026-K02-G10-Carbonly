@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from src.models.User import User
+from src.services.AppPaths import app_data_dir
 
 _APP_IDENTITY = b"carbonly-dekstop-app"
 _KDF_SALT = b"carbonly-kdf-salt-v1"
@@ -26,9 +27,7 @@ def _get_fernet() -> Fernet:
 
 class AuthService:
     _current_user: Optional[User] = None
-    _SESSION_PATH: Path = (
-        Path(__file__).resolve().parent.parent.parent / ".carbonly_session"
-    )
+    _SESSION_PATH: Path = app_data_dir() / ".carbonly_session"
 
     @staticmethod
     def get_current_user() -> Optional[User]:

@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 )
 from qfluentwidgets import (
     BodyLabel,
+    CaptionLabel,
     CardWidget,
     FluentIcon,
     InfoBar,
@@ -150,8 +151,6 @@ class HomePage(QWidget):
             title = SubtitleLabel("Carbonly", self)
             setFont(title, 26, QFont.Weight.Bold)
             title.setStyleSheet(f"color: {themeColor().name()};")
-
-            from qfluentwidgets import CaptionLabel
 
             tagline = CaptionLabel("Personal Carbon Footprint Tracker", self)
             tagline.setStyleSheet("color: gray;")
@@ -437,7 +436,7 @@ class HomePage(QWidget):
             modal.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
     class _ActivityLogSection(QWidget):
         data_changed = pyqtSignal()
@@ -565,7 +564,7 @@ class HomePage(QWidget):
             dialog.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
         def _on_edit_clicked(self) -> None:
             log = self._get_selected_log()
@@ -576,7 +575,7 @@ class HomePage(QWidget):
             dialog.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
         def _on_delete_clicked(self) -> None:
             log = self._get_selected_log()
@@ -592,7 +591,7 @@ class HomePage(QWidget):
             dlg.open()
             win = self.window()
             if win:
-                win.titleBar.raise_()
+                win.titleBar.raise_()  # type: ignore[attr-defined]
 
         def _execute_delete(self, log: ActivityLog) -> None:
             ActivityLogController.delete_log(log.id or 0)
