@@ -11,12 +11,12 @@ class AuthController:
     @staticmethod
     def login(username: str, password: str) -> tuple[bool, str]:
         if not username or not password:
-            return False, "Please enter username and password"
+            return False, "Masukkan username dan password terlebih dahulu."
         user = User.find_by_username(username)
         if user is None or user.password_hash is None:
-            return False, "Invalid username or password"
+            return False, "Username atau password salah."
         if not User.verify_password(user.password_hash, password):
-            return False, "Invalid username or password"
+            return False, "Username atau password salah."
         if user.id is not None and User.needs_rehash(user.password_hash):
             try:
                 new_hash = _ph.hash(password)
@@ -31,16 +31,16 @@ class AuthController:
     @staticmethod
     def register(username: str, password: str, confirm: str) -> tuple[bool, str]:
         if not username or not password or not confirm:
-            return False, "Please fill in all fields"
+            return False, "Semua field harus diisi."
         if password != confirm:
-            return False, "Passwords do not match"
+            return False, "Konfirmasi password tidak cocok."
         if len(username) < 3:
-            return False, "Username must be at least 3 characters"
+            return False, "Username minimal 3 karakter."
         if len(password) < 6:
-            return False, "Password must be at least 6 characters"
+            return False, "Password minimal 6 karakter."
         if not User.create_user(username, password):
-            return False, "Username already exists"
-        return True, "Registration successful! Please login."
+            return False, "Username sudah digunakan."
+        return True, "Pendaftaran berhasil! Silakan login."
 
     @staticmethod
     def logout() -> None:
@@ -62,39 +62,39 @@ class AuthController:
     @staticmethod
     def update_username(new_username: str) -> tuple[bool, str]:
         if not new_username:
-            return False, "Username tidak boleh kosong"
+            return False, "Username tidak boleh kosong."
         if len(new_username) < 3:
-            return False, "Username minimal 3 karakter"
+            return False, "Username minimal 3 karakter."
         user = AuthService.get_current_user()
         if user is None or user.id is None:
-            return False, "Not logged in"
+            return False, "Sesi tidak ditemukan, silakan login ulang."
         if user.username == new_username:
-            return False, "Username baru tidak boleh sama dengan username saat ini"
+            return False, "Username baru tidak boleh sama dengan username saat ini."
         if not User.update_username(user.id, new_username):
-            return False, "Username sudah digunakan"
+            return False, "Username sudah digunakan."
         user.username = new_username
-        return True, "Username berhasil diperbarui"
+        return True, "Username berhasil diperbarui."
 
     @staticmethod
     def update_password(current: str, new_pass: str, confirm: str) -> tuple[bool, str]:
         if not current or not new_pass or not confirm:
-            return False, "Semua field harus diisi"
+            return False, "Semua field harus diisi."
         if new_pass != confirm:
-            return False, "Password baru tidak cocok"
+            return False, "Konfirmasi password baru tidak cocok."
         if len(new_pass) < 6:
-            return False, "Password baru minimal 6 karakter"
+            return False, "Password baru minimal 6 karakter."
         user = AuthService.get_current_user()
         if user is None or user.id is None or user.password_hash is None:
-            return False, "Not logged in"
+            return False, "Sesi tidak ditemukan, silakan login ulang."
         if not User.verify_password(user.password_hash, current):
-            return False, "Password saat ini salah"
+            return False, "Password saat ini salah."
         if current == new_pass:
-            return False, "Password baru tidak boleh sama dengan password saat ini"
+            return False, "Password baru tidak boleh sama dengan password saat ini."
         try:
             new_hash = _ph.hash(new_pass)
         except HashingError:
-            return False, "Gagal memperbarui password, coba lagi"
+            return False, "Gagal memperbarui password, coba lagi."
         if not User.update_password(user.id, new_hash):
-            return False, "Gagal memperbarui password, coba lagi"
+            return False, "Gagal memperbarui password, coba lagi."
         user.password_hash = new_hash
-        return True, "Password berhasil diperbarui"
+        return True, "Password berhasil diperbarui."
