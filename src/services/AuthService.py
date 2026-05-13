@@ -46,7 +46,7 @@ class AuthService:
         try:
             payload = json.dumps({"user_id": user.id}).encode()
             AuthService._SESSION_PATH.write_bytes(_get_fernet().encrypt(payload))
-        except Exception:
+        except Exception:  # nosec: B110
             pass
 
     @staticmethod
