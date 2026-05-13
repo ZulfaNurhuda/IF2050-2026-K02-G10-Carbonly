@@ -63,7 +63,7 @@ jobs:
         shell: bash
         run: |
           ICON_FLAG=""
-          if [ "$RUNNER_OS" = "Windows" ]; then
+          if [ "$RUNNER_OS" != "macOS" ]; then
             ICON_FLAG="--icon assets/ico/favicon.ico"
           fi
           vpk pack \

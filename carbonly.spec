@@ -5,7 +5,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ("assets/ico/favicon.ico", "."),
+        ("assets/ico/favicon.ico", "assets/ico"),
     ],
     hiddenimports=[
         "PyQt6.sip",
