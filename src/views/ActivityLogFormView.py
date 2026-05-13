@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import QDate, Qt, QTimer, pyqtSignal
+from PyQt6.QtCore import QDate, QPoint, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QShowEvent
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 from qfluentwidgets import (
@@ -10,14 +10,51 @@ from qfluentwidgets import (
     ComboBox,
     DoubleSpinBox,
     FluentIcon,
+    MenuAnimationType,
     MessageBoxBase,
     PrimaryPushButton,
     StrongBodyLabel,
     SubtitleLabel,
 )
+from qfluentwidgets.components.date_time.calendar_view import CalendarView
+from qfluentwidgets.components.widgets.combo_box import ComboBoxMenu
 
 from src.controllers.ActivityLogController import ActivityLogController
 from src.models.ActivityLog import ActivityLog
+
+
+class _FlatComboBoxMenu(ComboBoxMenu):
+    def exec(self, pos, **_):
+        return super().exec(pos, aniType=MenuAnimationType.NONE)
+
+
+class _FlatCalendarView(CalendarView):
+    def exec(self, pos, **_):
+        return super().exec(pos, ani=False)
+
+
+class _FlatComboBox(ComboBox):
+    def _createComboMenu(self):  # noqa: N802
+        menu = _FlatComboBoxMenu(self)
+        menu.view.setGraphicsEffect(None)
+        menu.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        return menu
+
+
+class _FlatCalendarPicker(CalendarPicker):
+    def _showCalendarView(self):  # noqa: N802
+        view = _FlatCalendarView(self.window())
+        view.setResetEnabled(self.isRestEnabled())
+        view.stackedWidget.setGraphicsEffect(None)
+        view.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        view.resetted.connect(self.reset)
+        view.dateChanged.connect(self._onDateChanged)
+        if self._date.isValid():
+            view.setDate(self._date)
+        x = int(self.width() / 2 - view.sizeHint().width() / 2)
+        y = self.height()
+        view.exec(self.mapToGlobal(QPoint(x, y)))
+
 
 UNIT_MAP = {
     "Transportasi": "km",
@@ -99,12 +136,12 @@ class ActivityLogFormView(MessageBoxBase):
         self.viewLayout.addWidget(SubtitleLabel(self.windowTitle(), self))
 
         self._lbl_category = StrongBodyLabel("Kategori Aktivitas", self)
-        self._cb_category = ComboBox(self)
+        self._cb_category = _FlatComboBox(self)
         self._cb_category.addItems(CATEGORY_LIST)
         self._cb_category.setFixedHeight(40)
 
         self._lbl_date = StrongBodyLabel("Tanggal", self)
-        self._date_picker = CalendarPicker(self)
+        self._date_picker = _FlatCalendarPicker(self)
         self._date_picker.setDate(QDate.currentDate())
         self._date_picker.setFixedHeight(40)
 
@@ -121,15 +158,8 @@ class ActivityLogFormView(MessageBoxBase):
 
         self._btn_save = PrimaryPushButton("Simpan", self)
         self._btn_save.setFixedHeight(40)
-        self._btn_save.setMinimumWidth(300)
 
     def _setup_layout(self) -> None:
-        btn_row = QHBoxLayout()
-        btn_row.setContentsMargins(0, 0, 0, 0)
-        btn_row.setSpacing(8)
-        btn_row.addWidget(self._btn_save)
-        btn_row.addStretch(1)
-
         self.viewLayout.addWidget(self._lbl_category)
         self.viewLayout.addWidget(self._cb_category)
         self.viewLayout.addWidget(self._lbl_date)
@@ -137,7 +167,7 @@ class ActivityLogFormView(MessageBoxBase):
         self.viewLayout.addWidget(self._lbl_value)
         self.viewLayout.addWidget(self._spin_value)
         self.viewLayout.addWidget(self._msg_label)
-        self.viewLayout.addLayout(btn_row)
+        self.viewLayout.addWidget(self._btn_save)
 
     def _connect_signals(self) -> None:
         self._btn_save.clicked.connect(self._on_save_clicked)

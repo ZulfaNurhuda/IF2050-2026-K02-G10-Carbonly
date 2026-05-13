@@ -18,9 +18,7 @@ class SummaryController:
 
         target = EmissionTargetController.get_target()
         target_emission = (
-            target.target_value
-            if target and target.target_value is not None
-            else 0.0
+            target.target_value if target and target.target_value is not None else 0.0
         )
 
         result: Dict = {
@@ -35,8 +33,7 @@ class SummaryController:
             for i in range(delta_days + 1):
                 day = start_date + timedelta(days=i)
                 day_logs = [
-                    log for log in logs
-                    if log.date and log.date.date() == day.date()
+                    log for log in logs if log.date and log.date.date() == day.date()
                 ]
                 daily_emissions.append(
                     (day, SummaryController.calculate_total_emission(day_logs))
@@ -49,6 +46,4 @@ class SummaryController:
     def calculate_total_emission(logs: List["ActivityLog"]) -> float:
         if not logs:
             return 0.0
-        return sum(
-            log.total_emission for log in logs if log.total_emission is not None
-        )
+        return sum(log.total_emission for log in logs if log.total_emission is not None)

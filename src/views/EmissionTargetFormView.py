@@ -92,7 +92,6 @@ class EmissionTargetFormView(MessageBoxBase):
 
         self._btn_save = PrimaryPushButton("Simpan", self)
         self._btn_save.setFixedHeight(40)
-        self._btn_save.setMinimumWidth(300)
 
     def _setup_layout(self) -> None:
         input_row = QHBoxLayout()
@@ -101,16 +100,10 @@ class EmissionTargetFormView(MessageBoxBase):
         input_row.addWidget(self._value_input)
         input_row.addWidget(self._unit_label)
 
-        btn_row = QHBoxLayout()
-        btn_row.setContentsMargins(0, 0, 0, 0)
-        btn_row.setSpacing(8)
-        btn_row.addWidget(self._btn_save)
-        btn_row.addStretch(1)
-
         self.viewLayout.addWidget(self._lbl_value)
         self.viewLayout.addLayout(input_row)
         self.viewLayout.addWidget(self._msg_label)
-        self.viewLayout.addLayout(btn_row)
+        self.viewLayout.addWidget(self._btn_save)
 
     def _connect_signals(self) -> None:
         self._btn_save.clicked.connect(self._on_save_clicked)

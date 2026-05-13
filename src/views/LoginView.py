@@ -10,6 +10,7 @@ from qfluentwidgets import (
     MessageBoxBase,
     PrimaryPushButton,
     StrongBodyLabel,
+    SubtitleLabel,
 )
 
 from src.controllers.AuthController import AuthController
@@ -58,6 +59,11 @@ class LoginView(MessageBoxBase):
         self.viewLayout.insertLayout(0, row)
 
     def _setup_ui(self) -> None:
+        self._title_label = SubtitleLabel(
+            "Silakan Login untuk Mengakses Carbonly", self
+        )
+        self.viewLayout.addWidget(self._title_label)
+
         self.username_label = StrongBodyLabel("Username", self)
         self._username_input = LineEdit(self)
         self._username_input.setPlaceholderText("Masukkan username")
@@ -86,6 +92,7 @@ class LoginView(MessageBoxBase):
 
         self._submit_button = PrimaryPushButton("Login", self)
         self._submit_button.setFixedHeight(40)
+        self._submit_button.setAutoDefault(False)
         self._submit_button.clicked.connect(self._on_submit)
 
         self.yesButton.setVisible(False)
@@ -114,12 +121,14 @@ class LoginView(MessageBoxBase):
         self._msg_label.setVisible(False)
         if self._is_register_mode:
             self.setWindowTitle("Daftar")
+            self._title_label.setText("Silakan Daftar untuk Mengakses Carbonly")
             self._submit_button.setText("Daftar")
             self._register_link.setText("Sudah punya akun? Login")
             self._confirm_label.setVisible(True)
             self._confirm_input.setVisible(True)
         else:
             self.setWindowTitle("Login")
+            self._title_label.setText("Silakan Masuk untuk Mengakses Carbonly")
             self._submit_button.setText("Login")
             self._register_link.setText("Belum punya akun? Daftar")
             self._confirm_label.setVisible(False)

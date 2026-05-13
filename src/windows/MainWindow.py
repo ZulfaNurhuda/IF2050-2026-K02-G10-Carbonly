@@ -20,7 +20,7 @@ class MainWindow(MSFluentWindow):
         self.home_interface.profile_requested.connect(self._show_user_menu)
         self.setMinimumSize(1100, 700)
         self.setWindowTitle("Carbonly")
-        self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
+        self.setWindowIcon(QIcon("favicon.ico"))
 
     def _start_login(self) -> None:
         login_view = LoginView(self)

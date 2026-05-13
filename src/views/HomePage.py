@@ -9,13 +9,14 @@ from PyQt6.QtCharts import (
     QChartView,
     QValueAxis,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QPainter
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont, QPainter, QShowEvent
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
     QHeaderView,
     QScrollArea,
+    QStackedWidget,
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
@@ -46,6 +47,24 @@ from src.views.ActivityLogFormView import ActivityLogFormView
 from src.views.EmissionTargetFormView import EmissionTargetFormView
 
 
+class _ConfirmDeleteDialog(MessageBox):
+    def __init__(
+        self, title: str, content: str, parent: Optional[QWidget] = None
+    ) -> None:
+        super().__init__(title, content, parent)
+        self.yesButton.setText("Hapus")
+        self.cancelButton.setText("Batal")
+
+    def showEvent(self, event: QShowEvent) -> None:  # noqa: N802
+        super().showEvent(event)
+        if self.parent():
+            QTimer.singleShot(0, self._adjust_geometry)
+
+    def _adjust_geometry(self) -> None:
+        if self.parent() and hasattr(self.parent(), "width"):
+            self.setGeometry(0, 0, self.parent().width(), self.parent().height())
+
+
 class HomePage(QWidget):
     profile_requested = pyqtSignal()
 
@@ -53,6 +72,7 @@ class HomePage(QWidget):
         super().__init__(parent)
         self.setObjectName("home-page")
         self._header: Optional[HomePage._AppHeader] = None
+        self._welcome_label: Optional[SubtitleLabel] = None
         self._summary: Optional[HomePage._EmissionSummarySection] = None
         self._activity_log: Optional[HomePage._ActivityLogSection] = None
         self._setup_ui()
@@ -61,6 +81,8 @@ class HomePage(QWidget):
         username = AuthController.get_current_username() or "Pengguna"
         if self._header is not None:
             self._header.set_username(username)
+        if self._welcome_label is not None:
+            self._welcome_label.setText(f"Selamat datang, {username}!")
         if self._summary is not None:
             self._summary.refresh()
         if self._activity_log is not None:
@@ -94,10 +116,10 @@ class HomePage(QWidget):
         layout.setSpacing(24)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        welcome = SubtitleLabel(f"Selamat datang, {username}!", content)
+        self._welcome_label = SubtitleLabel(f"Selamat datang, {username}!", content)
         desc = BodyLabel("Pantau jejak karbon harian kamu di sini.", content)
         desc.setStyleSheet("color: gray;")
-        layout.addWidget(welcome)
+        layout.addWidget(self._welcome_label)
         layout.addWidget(desc)
 
         self._summary = HomePage._EmissionSummarySection(content)
@@ -137,7 +159,7 @@ class HomePage(QWidget):
             branding_col.addWidget(title)
             branding_col.addWidget(tagline)
 
-            username = AuthController.get_current_username()
+            username = AuthController.get_current_username() or "Pengguna"
             self._profile_btn = PrimaryPushButton(FluentIcon.PEOPLE, username, self)
             self._profile_btn.clicked.connect(self.profile_clicked)
 
@@ -235,8 +257,11 @@ class HomePage(QWidget):
 
         def _on_mode_changed(self, mode: str) -> None:
             self._current_mode = mode
+            now = datetime.now()
             if mode == "Mingguan":
-                self._current_date -= timedelta(days=self._current_date.weekday())
+                self._current_date = now - timedelta(days=now.weekday())
+            else:
+                self._current_date = now
             self._load_data()
 
         def _on_prev_clicked(self) -> None:
@@ -269,12 +294,23 @@ class HomePage(QWidget):
 
         def _update_date_label(self) -> None:
             if self._current_mode == "Harian":
-                self._date_label.setText(self._current_date.strftime("%d %B %Y"))
+                delta = (self._current_date.date() - datetime.now().date()).days
+                if delta == 0:
+                    label_text = "Hari Ini"
+                elif delta == -1:
+                    label_text = "Kemarin"
+                elif delta == 1:
+                    label_text = "Besok"
+                else:
+                    label_text = self._current_date.strftime("%d %B %Y")
+                self._date_label.setText(label_text)
                 return
 
             week_start, _ = self._get_week_range()
             today = datetime.now()
-            today_week_start = today - timedelta(days=today.weekday())
+            today_week_start = datetime.combine(
+                today.date() - timedelta(days=today.weekday()), time.min
+            )
             delta_days = (week_start - today_week_start).days
             delta_weeks = delta_days // 7
 
@@ -432,8 +468,22 @@ class HomePage(QWidget):
                     "Total Emisi (kg CO2e)",
                 ]
             )
-            self._table.horizontalHeader().setSectionResizeMode(
-                QHeaderView.ResizeMode.Stretch
+            header = self._table.horizontalHeader()
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            header.setStyleSheet(
+                "QHeaderView::section {"
+                f" background-color: {themeColor().name()};"
+                " color: white;"
+                " font-weight: bold;"
+                " border: none;"
+                " padding: 4px;"
+                "}"
+                " QHeaderView::section:first {"
+                " border-top-left-radius: 4px;"
+                "}"
+                " QHeaderView::section:last {"
+                " border-top-right-radius: 4px;"
+                "}"
             )
             self._table.hideColumn(0)
             self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -443,9 +493,39 @@ class HomePage(QWidget):
             self._table.setAlternatingRowColors(True)
             self._table.verticalHeader().setVisible(False)
             self._table.setMinimumHeight(300)
+            self._table.setVerticalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
+            self._table.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
 
-            self._btn_edit = PushButton(FluentIcon.EDIT, "Edit")
-            self._btn_delete = PushButton(FluentIcon.DELETE, "Hapus")
+            self._empty_widget = QWidget()
+            empty_layout = QVBoxLayout(self._empty_widget)
+            empty_layout.addStretch(1)
+            empty_title = SubtitleLabel("Belum Ada Log Aktivitas", self._empty_widget)
+            empty_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            empty_sub = BodyLabel(
+                "Silakan tambahkan log aktivitasmu!", self._empty_widget
+            )
+            empty_sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            empty_sub.setStyleSheet("color: gray;")
+            empty_layout.addWidget(empty_title)
+            empty_layout.addWidget(empty_sub)
+            empty_layout.addStretch(1)
+
+            self._stack = QStackedWidget()
+            self._stack.addWidget(self._empty_widget)
+            self._stack.addWidget(self._table)
+
+            self._card = CardWidget(self)
+            card_layout = QVBoxLayout(self._card)
+            card_layout.setContentsMargins(1, 1, 1, 1)
+            card_layout.setSpacing(0)
+            card_layout.addWidget(self._stack)
+
+            self._btn_edit = PushButton(FluentIcon.EDIT, "Edit Terpilih")
+            self._btn_delete = PushButton(FluentIcon.DELETE, "Hapus Terpilih")
             self._btn_edit.setEnabled(False)
             self._btn_delete.setEnabled(False)
             self._btn_edit.setFixedHeight(40)
@@ -454,10 +534,9 @@ class HomePage(QWidget):
         def _setup_layout(self) -> None:
             title_row = QHBoxLayout()
             title_row.addWidget(SubtitleLabel("Aktivitas Terbaru", self))
-            title_row.addStretch()
-            title_row.addWidget(self._btn_add)
 
             action_row = QHBoxLayout()
+            action_row.addWidget(self._btn_add)
             action_row.addWidget(self._btn_edit)
             action_row.addWidget(self._btn_delete)
             action_row.addStretch()
@@ -467,7 +546,7 @@ class HomePage(QWidget):
             root.setSpacing(12)
             root.addLayout(title_row)
             root.addLayout(action_row)
-            root.addWidget(self._table)
+            root.addWidget(self._card)
 
         def _connect_signals(self) -> None:
             self._btn_add.clicked.connect(self._on_add_clicked)
@@ -503,24 +582,30 @@ class HomePage(QWidget):
             log = self._get_selected_log()
             if log is None:
                 return
-            dlg = MessageBox(
+            date_str = log.date.strftime("%d %b %Y") if log.date else "-"
+            dlg = _ConfirmDeleteDialog(
                 "Hapus Log",
-                f"Yakin ingin menghapus log '{log.category}' "
-                f"pada {log.date.strftime('%d %b %Y') if log.date else '-'}?",
+                f"Yakin ingin menghapus log '{log.category}' pada {date_str}?",
                 self.window(),
             )
-            if dlg.exec():
-                ActivityLogController.delete_log(log.id or 0)
-                self._load_logs()
-                InfoBar.success(
-                    title="Dihapus",
-                    content="Log aktivitas berhasil dihapus.",
-                    orient=Qt.Orientation.Horizontal,
-                    isClosable=True,
-                    duration=3000,
-                    position=InfoBarPosition.TOP,
-                    parent=self.window(),
-                )
+            dlg.accepted.connect(lambda: self._execute_delete(log))
+            dlg.open()
+            win = self.window()
+            if win:
+                win.titleBar.raise_()  # type: ignore[attr-defined]
+
+        def _execute_delete(self, log: ActivityLog) -> None:
+            ActivityLogController.delete_log(log.id or 0)
+            self._load_logs()
+            InfoBar.success(
+                title="Dihapus",
+                content="Log aktivitas berhasil dihapus.",
+                orient=Qt.Orientation.Horizontal,
+                isClosable=True,
+                duration=3000,
+                position=InfoBarPosition.TOP,
+                parent=self.window(),
+            )
 
         def _get_selected_log(self) -> Optional[ActivityLog]:
             row = self._table.currentRow()
@@ -564,6 +649,7 @@ class HomePage(QWidget):
                         item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                     self._table.setItem(row, col, item)
 
+            self._stack.setCurrentIndex(1 if logs else 0)
             self._btn_edit.setEnabled(False)
             self._btn_delete.setEnabled(False)
             self.data_changed.emit()
